@@ -9,8 +9,20 @@ export const createCategoryInDb = async (data: ICategory) => {
 };
 
 // Get all Categorys
-export const getCategorysFromDb = async () => {
-    return await Category.find();
+export const getCategorysFromDb = async (id?: string, userId?: string, name?: string) => {
+    const filter: any = {};
+
+    if (name) {
+        filter.name = { $regex: name, $options: "i" };
+    }
+    if (userId) {
+        filter.userId = userId;
+    }
+    if (id) {
+        filter._id = id
+    }
+
+    return await Category.find(filter);
 };
 
 // Get a single Category by ID

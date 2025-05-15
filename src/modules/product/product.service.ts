@@ -9,9 +9,27 @@ export const createProductInDb = async (data: IProduct) => {
 };
 
 // Get all Products
-export const getProductsFromDb = async () => {
-    return await Product.find();
+export const getProductsFromDb = async (name?: string, categoryName?: string, categoryId?: string, userId?: string) => {
+    const filter: any = {};
+
+    if (name) {
+        filter.name = { $regex: name, $options: "i" };
+    }
+    if (userId) {
+        filter.userId = userId;
+    }
+    if (categoryName) {
+        filter.categoryName = { $regex: categoryName, $options: "i" };
+    }
+
+
+    if (categoryId?.length && categoryId?.length > 2) {
+        filter.categoryId = categoryId;
+    }
+
+    return await Product.find(filter);
 };
+
 
 // Get a single Product by ID
 export const getProductByIdFromDb = async (id: string) => {

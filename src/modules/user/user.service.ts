@@ -11,7 +11,9 @@ export const findUserByEmail = async (email: string) => {
     return await User.findOne({ email });
 };
 export const findUserByPhone = async (phone: string) => {
-    return await User.findOne({ phone });
+
+    console.log(phone, 'IIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIIII')
+    return await User.find({ phone });
 };
 
 /**
@@ -23,17 +25,21 @@ export const findUserByPhone = async (phone: string) => {
  */
 
 
-export const createUser = async ({ userId, name, email, phone, password, businessName, businessDescription, isARetailer }: IUser) => {
+export const createUser = async (payload: IUser) => {
 
 
-    return await User.create({
-        userId,
-        name,
-        email,
-        phone,
-        password,
-        businessName,
-        businessDescription,
-        isARetailer
-    });
+    return await User.create(payload);
+};
+
+
+
+
+// Update a Product by ID
+export const updateUserInDb = async (userId: string, data: Partial<IUser>) => {
+    return await User.findOneAndUpdate({ userId }, data, { new: true });
+};
+
+// Delete a Product by ID
+export const deleteUserFromDb = async (id: string) => {
+    return await User.findByIdAndDelete(id);
 };

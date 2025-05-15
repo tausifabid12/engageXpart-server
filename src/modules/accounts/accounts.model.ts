@@ -9,12 +9,18 @@ import { IAccount } from "./accounts.interface";
 const AccountSchema = new mongoose.Schema<IAccount>(
     {
 
-        userId: { type: String, required: true },
-        website: { type: String, enum: ['facebook', 'instagram', 'whatsapp'], required: true },
-        name: { type: String, required: true },
-        email: { type: String, required: true },
-        phone: { type: String, required: true },
-        accessToken: { type: String, required: true }
+        userId: { type: String },
+        profileId: { type: String },
+        website: { type: String, enum: ['facebook', 'instagram', 'whatsapp'] },
+        name: { type: String },
+        email: { type: String },
+        phone: { type: String },
+        accessToken: { type: String },
+        pages: [{
+            id: { type: String },
+            name: { type: String },
+            access_token: { type: String },
+        }]
 
     },
     { timestamps: true }

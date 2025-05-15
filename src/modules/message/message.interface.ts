@@ -3,11 +3,17 @@
 export interface IMessage {
     userId: string
     userName: string
-    receiverAccountId: string
-    senderAccountId: string
+    receiverProfileId: string
+    senderProfileId: string
     senderName: string
-    messageText: string
-    imageUrl: string
-    videoUrl: string
-    type: 'text' | 'image' | "template"
+    messages: {
+        messageText: string
+        imageUrl: string
+        videoUrl: string
+        type: 'text' | 'image' | "template"
+        messageId: string
+        isSeen: boolean
+        time: string
+        echo: boolean
+    }[]
 }

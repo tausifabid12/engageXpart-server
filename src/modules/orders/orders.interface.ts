@@ -21,4 +21,13 @@ export interface IOrder {
         tax: number
         quantity: number
     }[]
+
+    payment: {
+        paymentMethod: 'personal' | 'company'
+        paymentAccountName: string
+        paymentAccountNumber: string
+        paymentTypeName: 'send-money' | 'payment' | 'cash-out'
+        customerAccountNumber: string
+        transactionId: string
+    }
 }

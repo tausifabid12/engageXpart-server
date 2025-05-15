@@ -14,7 +14,7 @@ export const createCustomers = async (req: Request, res: Response): Promise<void
         });
     } catch (error) {
         console.log(error)
-        res.status(400).json({ message: "Error creating user flow", error });
+        res.status(400).json({ message: "Error creating ", error });
     }
 };
 
@@ -27,7 +27,7 @@ export const getCustomers = async (_req: Request, res: Response): Promise<void> 
             data: Customers
         });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching user flows", error });
+        res.status(500).json({ message: "Error fetching s", error });
     }
 };
 
@@ -44,7 +44,7 @@ export const getCustomersById = async (req: Request, res: Response): Promise<voi
             data: Customers
         });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching user flow", error });
+        res.status(500).json({ message: "Error fetching ", error });
     }
 };
 
@@ -61,7 +61,7 @@ export const updateCustomers = async (req: Request, res: Response): Promise<void
             data: Customers
         });
     } catch (error) {
-        res.status(500).json({ message: "Error updating user flow", error });
+        res.status(500).json({ message: "Error updating ", error });
     }
 };
 
@@ -75,6 +75,6 @@ export const deleteCustomers = async (req: Request, res: Response): Promise<void
         }
         res.json({ message: "User flow deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Error deleting user flow", error });
+        res.status(500).json({ message: "Error deleting ", error });
     }
 };

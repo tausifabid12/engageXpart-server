@@ -8,7 +8,7 @@ export const createPost = async (req: Request, res: Response): Promise<void> => 
         const Post = await createPostInDb(req.body);
         res.status(201).json(Post);
     } catch (error) {
-        res.status(400).json({ message: "Error creating user flow", error });
+        res.status(400).json({ message: "Error creating ", error });
     }
 };
 
@@ -18,7 +18,7 @@ export const getPosts = async (_req: Request, res: Response): Promise<void> => {
         const Posts = await getPostsFromDb();
         res.json(Posts);
     } catch (error) {
-        res.status(500).json({ message: "Error fetching user flows", error });
+        res.status(500).json({ message: "Error fetching s", error });
     }
 };
 
@@ -32,7 +32,7 @@ export const getPostById = async (req: Request, res: Response): Promise<void> =>
         }
         res.json(Post);
     } catch (error) {
-        res.status(500).json({ message: "Error fetching user flow", error });
+        res.status(500).json({ message: "Error fetching ", error });
     }
 };
 
@@ -46,7 +46,7 @@ export const updatePost = async (req: Request, res: Response): Promise<void> => 
         }
         res.json(Post);
     } catch (error) {
-        res.status(500).json({ message: "Error updating user flow", error });
+        res.status(500).json({ message: "Error updating ", error });
     }
 };
 
@@ -60,6 +60,6 @@ export const deletePost = async (req: Request, res: Response): Promise<void> => 
         }
         res.json({ message: "User flow deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Error deleting user flow", error });
+        res.status(500).json({ message: "Error deleting ", error });
     }
 };

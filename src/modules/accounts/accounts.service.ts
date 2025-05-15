@@ -9,8 +9,16 @@ export const createAccountInDb = async (data: IAccount) => {
 };
 
 // Get all Accounts
-export const getAccountsFromDb = async () => {
-    return await Account.find();
+export const getAccountsFromDb = async (userId: any) => {
+
+    let query: any = {};
+
+    if (userId) {
+        query.userId = userId
+    }
+
+
+    return await Account.find(query);
 };
 
 // Get a single Account by ID
@@ -25,5 +33,6 @@ export const updateAccountInDb = async (id: string, data: Partial<IAccount>) => 
 
 // Delete a Account by ID
 export const deleteAccountFromDb = async (id: string) => {
-    return await Account.findByIdAndDelete(id);
+    // return await Account.findByIdAndDelete(id);
+    return await Account.deleteMany({});
 };

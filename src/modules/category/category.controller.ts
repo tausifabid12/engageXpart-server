@@ -15,20 +15,22 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
             data: Category
         });
     } catch (error) {
-        res.status(400).json({ message: "Error creating user flow", error });
+        res.status(400).json({ message: "Error creating ", error });
     }
 };
 
 // Get all Categorys
-export const getCategorys = async (_req: Request, res: Response): Promise<void> => {
+export const getCategorys = async (req: Request, res: Response): Promise<void> => {
     try {
-        const Categorys = await getCategorysFromDb();
+
+        const { id, userId, name, }: any = req.query;
+        const Categorys = await getCategorysFromDb(id, userId, name);
         res.status(201).json({
             success: true,
             data: Categorys
         });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching user flows", error });
+        res.status(500).json({ message: "Error fetching s", error });
     }
 };
 
@@ -45,7 +47,7 @@ export const getCategoryById = async (req: Request, res: Response): Promise<void
             data: Category
         });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching user flow", error });
+        res.status(500).json({ message: "Error fetching ", error });
     }
 };
 
@@ -62,7 +64,7 @@ export const updateCategory = async (req: Request, res: Response): Promise<void>
             data: Category
         });
     } catch (error) {
-        res.status(500).json({ message: "Error updating user flow", error });
+        res.status(500).json({ message: "Error updating ", error });
     }
 };
 
@@ -76,6 +78,6 @@ export const deleteCategory = async (req: Request, res: Response): Promise<void>
         }
         res.json({ message: "User flow deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Error deleting user flow", error });
+        res.status(500).json({ message: "Error deleting ", error });
     }
 };

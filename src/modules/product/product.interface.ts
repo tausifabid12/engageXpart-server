@@ -1,9 +1,11 @@
 
 
 export interface IProduct {
+    userId: string
     name: string
     description: string
     categoryName: string
+    categoryId: string
     imageUrl: string[]
     stock: number
     originalPrice: string

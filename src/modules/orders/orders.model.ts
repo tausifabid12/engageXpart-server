@@ -22,15 +22,23 @@ const OrderSchema = new mongoose.Schema<IOrder>(
         },
         products: [
             {
-                name: { type: String, required: true },
-                description: { type: String, required: true },
-                categoryName: { type: String, required: true },
-                imageUrl: { type: [String], required: true },
-                price: { type: Number, required: true },
-                tax: { type: Number, required: true },
-                quantity: { type: Number, required: true },
+                name: { type: String },
+                description: { type: String },
+                categoryName: { type: String },
+                imageUrl: { type: [String] },
+                price: { type: Number },
+                tax: { type: Number },
+                quantity: { type: Number },
             },
         ],
+        payment: {
+            paymentMethod: { type: String, enum: ['personal', 'company'], required: true },
+            paymentAccountName: { type: String, required: true },
+            paymentAccountNumber: { type: String, required: true },
+            paymentTypeName: { type: String, enum: ['send-money', 'payment', 'cash-out'], required: true },
+            transactionId: { type: String, required: true },
+            customerAccountNumber: { type: String, required: true },
+        },
 
     },
     { timestamps: true }

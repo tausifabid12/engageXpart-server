@@ -1,24 +1,55 @@
 import { Request, Response } from "express";
 import { createAccountInDb, deleteAccountFromDb, getAccountByIdFromDb, getAccountsFromDb, updateAccountInDb } from "./accounts.service";
-
+import Account from "./accounts.model";
 
 // Create a new Account
 export const createAccount = async (req: Request, res: Response): Promise<void> => {
     try {
-        const Account = await createAccountInDb(req.body);
-        res.status(201).json(Account);
+
+
+        const { profileId } = req.body;
+
+        // Check if an account with the same profileId already exists
+        const existingAccount = await Account.findOne({ profileId });
+
+        if (existingAccount) {
+
+            res.status(400).json({
+                success: false,
+                message: "This Facebook account is already linked to another account."
+            });
+
+            return; // Stop execution
+        }
+
+        const result = await createAccountInDb(req.body);
+
+        res.status(201).json({
+            success: true,
+            data: result
+        });
+
     } catch (error) {
-        res.status(400).json({ message: "Error creating user flow", error });
+        res.status(400).json({ message: "Error creating ", error });
     }
 };
 
 // Get all Accounts
-export const getAccounts = async (_req: Request, res: Response): Promise<void> => {
+export const getAccounts = async (req: Request, res: Response): Promise<void> => {
     try {
-        const Accounts = await getAccountsFromDb();
-        res.json(Accounts);
+
+        const {
+            userId
+        } = req.query;
+
+        const Accounts = await getAccountsFromDb(userId);
+
+        res.status(201).json({
+            success: true,
+            data: Accounts
+        });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching user flows", error });
+        res.status(500).json({ message: "Error fetching s", error });
     }
 };
 
@@ -32,7 +63,7 @@ export const getAccountById = async (req: Request, res: Response): Promise<void>
         }
         res.json(Account);
     } catch (error) {
-        res.status(500).json({ message: "Error fetching user flow", error });
+        res.status(500).json({ message: "Error fetching ", error });
     }
 };
 
@@ -46,7 +77,7 @@ export const updateAccount = async (req: Request, res: Response): Promise<void> 
         }
         res.json(Account);
     } catch (error) {
-        res.status(500).json({ message: "Error updating user flow", error });
+        res.status(500).json({ message: "Error updating ", error });
     }
 };
 
@@ -60,6 +91,6 @@ export const deleteAccount = async (req: Request, res: Response): Promise<void> 
         }
         res.json({ message: "User flow deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Error deleting user flow", error });
+        res.status(500).json({ message: "Error deleting ", error });
     }
 };

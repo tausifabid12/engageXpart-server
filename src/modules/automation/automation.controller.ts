@@ -1,0 +1,83 @@
+import { Request, Response } from "express";
+import { createAutomationInDb, deleteAutomationFromDb, getAutomationByIdFromDb, getAutomationsFromDb, updateAutomationInDb } from "./automation.service";
+
+
+// Create a new Automation
+export const createAutomation = async (req: Request, res: Response): Promise<void> => {
+    try {
+
+        const Automation = await createAutomationInDb(req.body);
+
+        res.status(201).json({
+            success: true,
+            data: Automation
+        });
+    } catch (error) {
+        console.log(error)
+        res.status(400).json({ message: "Error creating ", error });
+    }
+};
+
+// Get all Automations
+export const getAutomations = async (req: Request, res: Response): Promise<void> => {
+    try {
+
+        const { categoryId, categoryName, name }: any = req.query;
+
+        const Automations = await getAutomationsFromDb(name, categoryName, categoryId);
+        res.status(201).json({
+            success: true,
+            data: Automations
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching s", error });
+    }
+};
+
+// Get a single Automation by ID
+export const getAutomationById = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const Automation = await getAutomationByIdFromDb(req.params.id);
+        if (!Automation) {
+            res.status(404).json({ message: "User flow not found" });
+            return;
+        }
+        res.status(201).json({
+            success: true,
+            data: Automation
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching ", error });
+    }
+};
+
+// Update a Automation by ID
+export const updateAutomation = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const Automation = await updateAutomationInDb(req.params.id, req.body);
+        if (!Automation) {
+            res.status(404).json({ message: "User flow not found" });
+            return;
+        }
+        res.status(201).json({
+            success: true,
+            data: Automation
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error updating ", error });
+    }
+};
+
+// Delete a Automation by ID
+export const deleteAutomation = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const Automation = await deleteAutomationFromDb(req.params.id);
+        if (!Automation) {
+            res.status(404).json({ message: "User flow not found" });
+            return;
+        }
+        res.json({ message: "User flow deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting ", error });
+    }
+};

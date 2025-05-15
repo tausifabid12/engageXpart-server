@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createUser, findUserByEmail, findUserByPhone } from "./user.service";
+import { createUser, deleteUserFromDb, findUserByEmail, findUserByPhone, updateUserInDb } from "./user.service";
 import { generateToken } from "../../utils/jwt";
 import User from "./user.model";
 import { IUser } from "./user.interface";
@@ -21,13 +21,13 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
 
         // Check if phone number already exists
         const existingPhoneUser = await findUserByPhone(phone);
-        if (existingPhoneUser) {
+        if (existingPhoneUser[0]?.userId) {
             res.status(400).json({ message: "Phone number is already registered" });
             return;
         }
 
         // Ensure all required fields are present
-        if (!name || !email || !phone || !password || businessName === undefined || isARetailer === undefined) {
+        if (!name || !email || !phone || !password) {
             res.status(400).json({ message: "Missing required fields" });
             return;
         }
@@ -36,15 +36,10 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
         const hashedPassword = await bcrypt.hash(password, salt);
         // Create user
         const user: IUser = await createUser({
+            ...req.body,
             userId: `EX${phone}`,
-            name,
-            email,
-            phone,
-            password: hashedPassword,
-            businessName,
-            businessDescription,
-            isARetailer
-        });
+            password: hashedPassword
+        })
 
         // Generate JWT token
         const token = generateToken(user.userId, user?.email);
@@ -64,10 +59,17 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
     try {
         const { identifier, password } = req.body; // identifier can be email or phone
 
+
+        console.log(identifier, password, "{{{{{{{{{{{{{{{{{{{{{{{{{{")
+
         // Check if the user exists (by email or phone)
-        const user: IUser | null = identifier.includes("@")
+        const user: IUser[] | null = identifier.includes("@")
             ? await findUserByEmail(identifier)
             : await findUserByPhone(identifier);
+
+
+
+        console.log(user, '{{{{{{{{{{{{{{{{{{{')
 
         if (!user) {
             res.status(400).json({ message: "Invalid credentials" });
@@ -75,19 +77,24 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         }
 
         // Verify password
-        const isMatch = await bcrypt.compare(password, user.password);
+        const isMatch = await bcrypt.compare(password, user[0].password);
+
+
+        console.log(isMatch, 'PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP')
         if (!isMatch) {
             res.status(400).json({ message: "Invalid credentials" });
             return;
         }
 
-        // Generate JWT token
-        const token = generateToken(user.userId, user?.email);
+        //Generate JWT token
+        const token = generateToken(user[0].userId, user[0]?.email);
+
+        console.log(token)
 
         res.status(200).json({
             success: true,
             data: user,
-            token
+            token: token
         });
     } catch (error: any) {
         res.status(500).json({ message: error.message });
@@ -167,3 +174,34 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
 };
 
 
+
+// Update a Product by ID
+export const updateUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const Product = await updateUserInDb(req.params.userId, req.body);
+        if (!Product) {
+            res.status(404).json({ message: "User  not found" });
+            return;
+        }
+        res.status(201).json({
+            success: true,
+            data: Product
+        });
+    } catch (error) {
+        res.status(500).json({ message: "Error updating ", error });
+    }
+};
+
+// Delete a Product by ID
+export const deleteUser = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const Product = await deleteUserFromDb(req.params.id);
+        if (!Product) {
+            res.status(404).json({ message: "User  not found" });
+            return;
+        }
+        res.json({ message: " deleted successfully" });
+    } catch (error) {
+        res.status(500).json({ message: "Error deleting ", error });
+    }
+};

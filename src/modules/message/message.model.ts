@@ -8,15 +8,23 @@ import { IMessage } from "./message.interface";
 
 const MessageSchema = new mongoose.Schema<IMessage>(
     {
-        userId: { type: String, required: true },
-        userName: { type: String, required: true },
-        receiverAccountId: { type: String, required: true },
-        senderAccountId: { type: String, required: true },
-        senderName: { type: String, required: true },
-        messageText: { type: String, required: true },
-        imageUrl: { type: String, required: false },
-        videoUrl: { type: String, required: false },
-        type: { type: String, enum: ['text', 'image', 'template'], required: true }
+        userId: { type: String, },
+        userName: { type: String, },
+        receiverProfileId: { type: String, },
+        senderProfileId: { type: String, },
+        senderName: { type: String, },
+        messages: [
+            {
+                messageText: { type: String, required: false },
+                imageUrl: { type: String, required: false },
+                videoUrl: { type: String, required: false },
+                type: { type: String, enum: ['text', 'image', 'template'], },
+                messageId: { type: String, },
+                isSeen: { type: Boolean, default: false },
+                time: { type: String, },
+                echo: { type: Boolean, }
+            }
+        ]
 
     },
     { timestamps: true }

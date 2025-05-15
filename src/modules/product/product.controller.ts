@@ -14,20 +14,23 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
         });
     } catch (error) {
         console.log(error)
-        res.status(400).json({ message: "Error creating user flow", error });
+        res.status(400).json({ message: "Error creating ", error });
     }
 };
 
 // Get all Products
-export const getProducts = async (_req: Request, res: Response): Promise<void> => {
+export const getProducts = async (req: Request, res: Response): Promise<void> => {
     try {
-        const Products = await getProductsFromDb();
+
+        const { categoryId, categoryName, name, userId }: any = req.query;
+
+        const Products = await getProductsFromDb(name, categoryName, categoryId, userId);
         res.status(201).json({
             success: true,
             data: Products
         });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching user flows", error });
+        res.status(500).json({ message: "Error fetching s", error });
     }
 };
 
@@ -44,7 +47,7 @@ export const getProductById = async (req: Request, res: Response): Promise<void>
             data: Product
         });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching user flow", error });
+        res.status(500).json({ message: "Error fetching ", error });
     }
 };
 
@@ -61,7 +64,7 @@ export const updateProduct = async (req: Request, res: Response): Promise<void> 
             data: Product
         });
     } catch (error) {
-        res.status(500).json({ message: "Error updating user flow", error });
+        res.status(500).json({ message: "Error updating ", error });
     }
 };
 
@@ -75,6 +78,6 @@ export const deleteProduct = async (req: Request, res: Response): Promise<void> 
         }
         res.json({ message: "User flow deleted successfully" });
     } catch (error) {
-        res.status(500).json({ message: "Error deleting user flow", error });
+        res.status(500).json({ message: "Error deleting ", error });
     }
 };
