@@ -13,11 +13,11 @@ const AdminLeadSchema = new mongoose.Schema<IAdminLead>(
 
         businessName: { type: String, required: true, trim: true },
         contactPersonName: { type: String, trim: true },
-        email: { type: String, trim: true, lowercase: true, unique: true },
-        phone: { type: String, trim: true, unique: true },
+        email: { type: String, trim: true },
+        phone: { type: String, trim: true },
         whatsapp: { type: String, trim: true },
         source: { type: String, enum: Object.values(LeadSource) },
-        sourceUrl: { type: String, required: true, trim: true },
+        sourceUrl: { type: String, required: true, trim: true, unique: true },
         businessSize: { type: String, },
         status: { type: String, enum: Object.values(LeadStatus), default: LeadStatus.COLLECTED },
 
