@@ -19,17 +19,26 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
 };
 
 // Get all Orders
-export const getOrders = async (_req: Request, res: Response): Promise<void> => {
+export const getOrders = async (req: Request, res: Response): Promise<void> => {
     try {
-        const Orders = await getOrdersFromDb();
-        res.status(201).json({
+        const page = parseInt(req.query.page as string) || 1;
+        const limit = parseInt(req.query.limit as string) || 10;
+        const skip = (page - 1) * limit;
+
+        const { orders, total } = await getOrdersFromDb(skip, limit);
+
+        res.status(200).json({
             success: true,
-            data: Orders
+            total,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+            data: orders
         });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching s", error });
+        res.status(500).json({ message: "Error fetching orders", error });
     }
 };
+
 
 // Get a single Order by ID
 export const getOrderById = async (req: Request, res: Response): Promise<void> => {

@@ -9,25 +9,27 @@ export const createProductInDb = async (data: IProduct) => {
 };
 
 // Get all Products
-export const getProductsFromDb = async (name?: string, categoryName?: string, categoryId?: string, userId?: string) => {
+export const getProductsFromDb = async (
+    id?: string,
+    name?: string,
+    categoryName?: string,
+    categoryId?: string,
+    userId?: string,
+    skip: number = 0,
+    limit: number = 10
+) => {
     const filter: any = {};
 
-    if (name) {
-        filter.name = { $regex: name, $options: "i" };
-    }
-    if (userId) {
-        filter.userId = userId;
-    }
-    if (categoryName) {
-        filter.categoryName = { $regex: categoryName, $options: "i" };
-    }
+    if (name) filter.name = { $regex: name, $options: "i" };
+    if (userId) filter.userId = userId;
+    if (id) filter._id = id;
+    if (categoryName) filter.categoryName = { $regex: categoryName, $options: "i" };
+    if (categoryId?.length && categoryId?.length > 2) filter.categoryId = categoryId;
 
+    const total = await Product.countDocuments(filter);
+    const products = await Product.find(filter).skip(skip).limit(limit);
 
-    if (categoryId?.length && categoryId?.length > 2) {
-        filter.categoryId = categoryId;
-    }
-
-    return await Product.find(filter);
+    return { products, total };
 };
 
 

@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createUser, deleteUserFromDb, findUserByEmail, findUserByPhone, updateUserInDb } from "./user.service";
+import { createUser, deleteUserFromDb, findUserByEmail, findUserByPhone, getUserFromDb, updateUserInDb } from "./user.service";
 import { generateToken } from "../../utils/jwt";
 import User from "./user.model";
 import { IUser } from "./user.interface";
@@ -38,6 +38,7 @@ export const registerUser = async (req: Request, res: Response): Promise<void> =
         const user: IUser = await createUser({
             ...req.body,
             userId: `EX${phone}`,
+            slug: `EX${phone}-${businessName?.toLowerCase()?.replace(/[^a-zA-Z0-9]/g, '-')}`,
             password: hashedPassword
         })
 
@@ -63,6 +64,7 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         console.log(identifier, password, "{{{{{{{{{{{{{{{{{{{{{{{{{{")
 
         // Check if the user exists (by email or phone)
+        // @ts-ignore\
         const user: IUser[] | null = identifier.includes("@")
             ? await findUserByEmail(identifier)
             : await findUserByPhone(identifier);
@@ -105,72 +107,102 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
 
 
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
+    // try {
+
+
+
+
     try {
-        // Extract query parameters
-        const {
-            name,
-            email,
-            phone,
-            businessName,
-            isARetailer,
-            sortBy = "createdAt",
-            sortOrder = "desc",
-            page = "1",
-            limit = "10",
-            search,
-            hidePassword = "false" // Default: false (password is included)
-        } = req.query;
+        const { id, userId, businessName, slug, name, phone, userType, page = '1', limit = '10' }: any = req.query;
 
-        // Build filter object
-        const filter: any = {};
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
 
-        if (name) filter.name = new RegExp(name as string, "i"); // Case-insensitive search
-        if (email) filter.email = new RegExp(email as string, "i");
-        if (phone) filter.phone = phone;
-        if (businessName) filter.businessName = new RegExp(businessName as string, "i");
-        if (isARetailer !== undefined) filter.isARetailer = isARetailer === "true"; // Convert to boolean
-
-        // Search across multiple fields
-        if (search) {
-            const searchRegex = new RegExp(search as string, "i");
-            filter.$or = [
-                { name: searchRegex },
-                { email: searchRegex },
-                { phone: searchRegex },
-                { businessName: searchRegex }
-            ];
-        }
-
-        // Pagination setup
-        const pageNumber = parseInt(page as string, 10) || 1;
-        const pageSize = parseInt(limit as string, 10) || 10;
-        const skip = (pageNumber - 1) * pageSize;
-
-        // Define the fields to be selected
-        const fieldsToSelect = hidePassword === "true" ? "-password" : ""; // Exclude password if true
-
-        // Fetch users with filtering, sorting, and pagination
-        const users: IUser[] = await User.find(filter)
-            .select(fieldsToSelect) // Exclude password if requested
-            .sort({ [sortBy as string]: sortOrder === "desc" ? -1 : 1 })
-            .skip(skip)
-            .limit(pageSize);
-
-        // Get total count for pagination
-        const totalUsers = await User.countDocuments(filter);
+        const { users, total } = await getUserFromDb(id, userId, businessName, slug, name, phone, userType, skip, limitNum);
 
         res.status(200).json({
             success: true,
-            data: users,
-            meta: {
-                totalData: totalUsers,
-                currentPage: pageNumber,
-                totalPages: Math.ceil(totalUsers / pageSize),
-            }
+            total,
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
+            data: users
         });
-    } catch (error: any) {
-        res.status(500).json({ message: error.message });
+    } catch (error) {
+        res.status(500).json({ message: "Error fetching users", error });
     }
+
+
+
+
+
+
+
+    //     // Extract query parameters
+    //     const {
+    //         name,
+    //         email,
+    //         phone,
+    //         businessName,
+    //         isARetailer,
+    //         sortBy = "createdAt",
+    //         sortOrder = "desc",
+    //         page = "1",
+    //         limit = "10",
+    //         search,
+    //         hidePassword = "false" // Default: false (password is included)
+    //     } = req.query;
+
+    //     // Build filter object
+    //     const filter: any = {};
+
+    //     if (name) filter.name = new RegExp(name as string, "i"); // Case-insensitive search
+    //     if (email) filter.email = new RegExp(email as string, "i");
+    //     if (phone) filter.phone = phone;
+    //     if (businessName) filter.businessName = new RegExp(businessName as string, "i");
+    //     if (isARetailer !== undefined) filter.isARetailer = isARetailer === "true"; // Convert to boolean
+
+    //     // Search across multiple fields
+    //     if (search) {
+    //         const searchRegex = new RegExp(search as string, "i");
+    //         filter.$or = [
+    //             { name: searchRegex },
+    //             { email: searchRegex },
+    //             { phone: searchRegex },
+    //             { businessName: searchRegex }
+    //         ];
+    //     }
+
+    //     // Pagination setup
+    //     const pageNumber = parseInt(page as string, 10) || 1;
+    //     const pageSize = parseInt(limit as string, 10) || 10;
+    //     const skip = (pageNumber - 1) * pageSize;
+
+    //     // Define the fields to be selected
+    //     const fieldsToSelect = hidePassword === "true" ? "-password" : ""; // Exclude password if true
+
+    //     // Fetch users with filtering, sorting, and pagination
+    //     const users: IUser[] = await User.find(filter)
+    //         .select(fieldsToSelect) // Exclude password if requested
+    //         .sort({ [sortBy as string]: sortOrder === "desc" ? -1 : 1 })
+    //         .skip(skip)
+    //         .limit(pageSize);
+
+    //     // Get total count for pagination
+    //     const totalUsers = await User.countDocuments(filter);
+
+    //     res.status(200).json({
+    //         success: true,
+    //         data: users,
+    //         meta: {
+    //             totalData: totalUsers,
+    //             currentPage: pageNumber,
+    //             totalPages: Math.ceil(totalUsers / pageSize),
+    //         }
+    //     });
+    // } catch (error: any) {
+    //     res.status(500).json({ message: error.message });
+    // }
 };
 
 

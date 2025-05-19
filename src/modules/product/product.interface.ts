@@ -2,6 +2,7 @@
 
 export interface IProduct {
     userId: string
+    userSlug: string
     name: string
     description: string
     categoryName: string
@@ -14,5 +15,5 @@ export interface IProduct {
     variantNames: {
         name: string
         imageUrl: string
-    }
+    }[]
 }

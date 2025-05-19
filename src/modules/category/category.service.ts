@@ -9,7 +9,13 @@ export const createCategoryInDb = async (data: ICategory) => {
 };
 
 // Get all Categorys
-export const getCategorysFromDb = async (id?: string, userId?: string, name?: string) => {
+export const getCategorysFromDb = async (
+    id?: string,
+    userId?: string,
+    name?: string,
+    skip: number = 0,
+    limit: number = 10
+) => {
     const filter: any = {};
 
     if (name) {
@@ -19,11 +25,15 @@ export const getCategorysFromDb = async (id?: string, userId?: string, name?: st
         filter.userId = userId;
     }
     if (id) {
-        filter._id = id
+        filter._id = id;
     }
 
-    return await Category.find(filter);
+    const total = await Category.countDocuments(filter);
+    const categories = await Category.find(filter).skip(skip).limit(limit);
+
+    return { categories, total };
 };
+
 
 // Get a single Category by ID
 export const getCategoryByIdFromDb = async (id: string) => {

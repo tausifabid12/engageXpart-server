@@ -21,18 +21,26 @@ export const createAutomation = async (req: Request, res: Response): Promise<voi
 // Get all Automations
 export const getAutomations = async (req: Request, res: Response): Promise<void> => {
     try {
+        const { categoryId, categoryName, name, page = '1', limit = '10' }: any = req.query;
 
-        const { categoryId, categoryName, name }: any = req.query;
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
 
-        const Automations = await getAutomationsFromDb(name, categoryName, categoryId);
-        res.status(201).json({
+        const { automations, total } = await getAutomationsFromDb(name, categoryName, categoryId, skip, limitNum);
+
+        res.status(200).json({
             success: true,
-            data: Automations
+            total,
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
+            data: automations
         });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching s", error });
+        res.status(500).json({ message: "Error fetching automations", error });
     }
 };
+
 
 // Get a single Automation by ID
 export const getAutomationById = async (req: Request, res: Response): Promise<void> => {

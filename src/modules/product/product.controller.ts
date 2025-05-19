@@ -21,18 +21,26 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
 // Get all Products
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
     try {
+        const { id, categoryId, categoryName, name, userId, page = '1', limit = '10' }: any = req.query;
 
-        const { categoryId, categoryName, name, userId }: any = req.query;
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
 
-        const Products = await getProductsFromDb(name, categoryName, categoryId, userId);
-        res.status(201).json({
+        const { products, total } = await getProductsFromDb(id, name, categoryName, categoryId, userId, skip, limitNum);
+
+        res.status(200).json({
             success: true,
-            data: Products
+            total,
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
+            data: products
         });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching s", error });
+        res.status(500).json({ message: "Error fetching products", error });
     }
 };
+
 
 // Get a single Product by ID
 export const getProductById = async (req: Request, res: Response): Promise<void> => {

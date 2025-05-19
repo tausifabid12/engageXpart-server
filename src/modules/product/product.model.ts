@@ -11,6 +11,7 @@ const ProductSchema = new mongoose.Schema<IProduct>(
 
         name: { type: String, required: true },
         userId: { type: String, required: true },
+        userSlug: { type: String, required: true },
         description: { type: String, required: true },
         categoryName: { type: String, required: true },
         categoryId: { type: String, required: true },

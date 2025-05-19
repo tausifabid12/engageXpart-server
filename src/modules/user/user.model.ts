@@ -11,6 +11,7 @@ const UserSchema = new mongoose.Schema<IUser>(
         phone: { type: String, required: true, unique: true },
         password: { type: String },
         businessName: { type: String },
+        slug: { type: String },
         businessDescription: { type: String },
         logoUrl: { type: String },
         coverImageUrl: { type: String },
@@ -28,6 +29,16 @@ const UserSchema = new mongoose.Schema<IUser>(
         userType: { type: String, enum: ['admin', 'superAdmin', 'agent', 'support', 'consumer'], default: "consumer" },
         isARetailer: { type: Boolean, default: false },
         isFacebookConnected: { type: Boolean, default: false },
+        paymentInfo: {
+            type: [{
+                paymentOperatorName: { type: String },
+                paymentAccountType: {
+                    type: String,
+                    enum: ['agent', 'personal', 'merchant'],
+                },
+                accountNumber: { type: String }
+            }], default: []
+        }
     },
     { timestamps: true }
 );

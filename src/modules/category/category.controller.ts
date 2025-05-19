@@ -22,15 +22,23 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
 // Get all Categorys
 export const getCategorys = async (req: Request, res: Response): Promise<void> => {
     try {
+        const { id, userId, name, page = '1', limit = '10' }: any = req.query;
 
-        const { id, userId, name, }: any = req.query;
-        const Categorys = await getCategorysFromDb(id, userId, name);
-        res.status(201).json({
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
+
+        const { categories, total } = await getCategorysFromDb(id, userId, name, skip, limitNum);
+
+        res.status(200).json({
             success: true,
-            data: Categorys
+            total,
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
+            data: categories
         });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching s", error });
+        res.status(500).json({ message: "Error fetching categories", error });
     }
 };
 

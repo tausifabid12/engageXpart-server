@@ -5,6 +5,7 @@ export interface IUser {
     phone: string
     password: string;
     businessName?: string
+    slug: string
     businessDescription?: string;
     logoUrl?: string
     coverImageUrl?: string
@@ -22,4 +23,13 @@ export interface IUser {
     isARetailer?: boolean,
     userType: 'admin' | 'superAdmin' | 'agent' | 'support' | 'consumer'
     isFacebookConnected: boolean
+    paymentInfo: {
+        paymentOperatorName: string
+        paymentAccountType: 'agent' | 'personal' | 'merchant',
+        accountNumber: string
+    }[]
+    shippingFee: {
+        location: string,
+        fee: number
+    }
 }

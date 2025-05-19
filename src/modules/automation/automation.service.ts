@@ -9,7 +9,13 @@ export const createAutomationInDb = async (data: IAutomation) => {
 };
 
 // Get all Automations
-export const getAutomationsFromDb = async (name?: string, categoryName?: string, categoryId?: string) => {
+export const getAutomationsFromDb = async (
+    name?: string,
+    categoryName?: string,
+    categoryId?: string,
+    skip: number = 0,
+    limit: number = 10
+) => {
     const filter: any = {};
 
     if (name) {
@@ -18,13 +24,14 @@ export const getAutomationsFromDb = async (name?: string, categoryName?: string,
     if (categoryName) {
         filter.categoryName = { $regex: categoryName, $options: "i" };
     }
-
-
     if (categoryId?.length && categoryId?.length > 2) {
         filter.categoryId = categoryId;
     }
 
-    return await Automation.find(filter);
+    const total = await Automation.countDocuments(filter);
+    const automations = await Automation.find(filter).skip(skip).limit(limit);
+
+    return { automations, total };
 };
 
 
