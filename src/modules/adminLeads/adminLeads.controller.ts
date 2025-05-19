@@ -19,23 +19,27 @@ export const createAdminLead = async (req: Request, res: Response): Promise<void
 };
 
 
-// Bulk create AdminLeads
 export const createAdminLeads = async (req: Request, res: Response): Promise<void> => {
-    try {
-        const adminLeads = await createAdminLeadsInDb(req.body); // Expecting an array
+    const inputLeads = req.body; // Expecting an array
+    const createdLeads = [];
+    const failedLeads = [];
 
-        res.status(201).json({
-            success: true,
-            data: adminLeads,
-        });
-    } catch (error) {
-        console.error(error);
-        res.status(400).json({
-            message: "Error creating admin leads",
-            error,
-        });
+    for (const lead of inputLeads) {
+        try {
+            const created = await createAdminLeadsInDb([lead]); // assuming this accepts an array
+            createdLeads.push(created[0]); // assuming it returns an array
+        } catch (err: any) {
+            failedLeads.push({ lead, error: err.message || err });
+        }
     }
+
+    res.status(207).json({ // 207 = Multi-Status (partial success)
+        success: true,
+        created: createdLeads,
+        failed: failedLeads,
+    });
 };
+
 
 // Get all AdminLeads
 export const getAdminLeads = async (req: Request, res: Response): Promise<void> => {
