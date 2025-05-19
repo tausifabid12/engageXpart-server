@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createAdminLeadInDb, deleteAdminLeadFromDb, getAdminLeadByIdFromDb, getAdminLeadsFromDb, updateAdminLeadInDb } from "./adminLeads.service";
+import { createAdminLeadInDb, createAdminLeadsInDb, deleteAdminLeadFromDb, getAdminLeadByIdFromDb, getAdminLeadsFromDb, updateAdminLeadInDb } from "./adminLeads.service";
 
 
 // Create a new AdminLead
@@ -15,6 +15,25 @@ export const createAdminLead = async (req: Request, res: Response): Promise<void
     } catch (error) {
         console.log(error)
         res.status(400).json({ message: "Error creating ", error });
+    }
+};
+
+
+// Bulk create AdminLeads
+export const createAdminLeads = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const adminLeads = await createAdminLeadsInDb(req.body); // Expecting an array
+
+        res.status(201).json({
+            success: true,
+            data: adminLeads,
+        });
+    } catch (error) {
+        console.error(error);
+        res.status(400).json({
+            message: "Error creating admin leads",
+            error,
+        });
     }
 };
 

@@ -8,6 +8,11 @@ export const createAdminLeadInDb = async (data: IAdminLead) => {
     return await AdminLead.create(data);
 };
 
+// Create multiple AdminLeads
+export const createAdminLeadsInDb = async (data: IAdminLead[]) => {
+    return await AdminLead.insertMany(data);
+};
+
 // Get all AdminLeads
 export const getAdminLeadsFromDb = async (name?: string, categoryName?: string, categoryId?: string) => {
     const filter: any = {};

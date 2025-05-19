@@ -32,6 +32,6 @@ export interface IAdminLead {
     whatsapp: string;
     source: LeadSource;
     sourceUrl: string;
-    businessSize: BusinessSize;
+    businessSize: string;
     status: LeadStatus;
 }
