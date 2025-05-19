@@ -44,16 +44,19 @@ export const createAdminLeads = async (req: Request, res: Response): Promise<voi
 // Get all AdminLeads
 export const getAdminLeads = async (req: Request, res: Response): Promise<void> => {
     try {
+        const { categoryId, categoryName, name, page = "1", limit = "10" }: any = req.query;
 
-        const { categoryId, categoryName, name }: any = req.query;
+        const paginationPage = parseInt(page, 10);
+        const paginationLimit = parseInt(limit, 10);
 
-        const AdminLeads = await getAdminLeadsFromDb(name, categoryName, categoryId);
-        res.status(201).json({
+        const result = await getAdminLeadsFromDb(name, categoryName, categoryId, paginationPage, paginationLimit);
+
+        res.status(200).json({
             success: true,
-            data: AdminLeads
+            ...result
         });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching s", error });
+        res.status(500).json({ message: "Error fetching AdminLeads", error });
     }
 };
 

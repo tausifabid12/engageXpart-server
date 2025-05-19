@@ -14,7 +14,14 @@ export const createAdminLeadsInDb = async (data: IAdminLead[]) => {
 };
 
 // Get all AdminLeads
-export const getAdminLeadsFromDb = async (name?: string, categoryName?: string, categoryId?: string) => {
+// Get all AdminLeads with pagination and newest first
+export const getAdminLeadsFromDb = async (
+    name?: string,
+    categoryName?: string,
+    categoryId?: string,
+    page: number = 1,
+    limit: number = 10
+) => {
     const filter: any = {};
 
     if (name) {
@@ -23,13 +30,25 @@ export const getAdminLeadsFromDb = async (name?: string, categoryName?: string, 
     if (categoryName) {
         filter.categoryName = { $regex: categoryName, $options: "i" };
     }
-
-
     if (categoryId?.length && categoryId?.length > 2) {
         filter.categoryId = categoryId;
     }
 
-    return await AdminLead.find(filter);
+    const skip = (page - 1) * limit;
+
+    const data = await AdminLead.find(filter)
+        .sort({ createdAt: -1 }) // newest first
+        .skip(skip)
+        .limit(limit);
+
+    const total = await AdminLead.countDocuments(filter);
+
+    return {
+        data,
+        currentPage: page,
+        totalPages: Math.ceil(total / limit),
+        totalItems: total,
+    };
 };
 
 
