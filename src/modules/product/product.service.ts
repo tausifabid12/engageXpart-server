@@ -10,7 +10,7 @@ export const createProductInDb = async (data: IProduct) => {
 
 // Get all Products
 export const getProductsFromDb = async (
-    id?: string,
+    ids?: string[],
     name?: string,
     categoryName?: string,
     categoryId?: string,
@@ -22,7 +22,7 @@ export const getProductsFromDb = async (
 
     if (name) filter.name = { $regex: name, $options: "i" };
     if (userId) filter.userId = userId;
-    if (id) filter._id = id;
+    if (ids && ids.length > 0) filter._id = { $in: ids }; // 👈 array of product IDs
     if (categoryName) filter.categoryName = { $regex: categoryName, $options: "i" };
     if (categoryId?.length && categoryId?.length > 2) filter.categoryId = categoryId;
 
@@ -30,7 +30,7 @@ export const getProductsFromDb = async (
     const products = await Product.find(filter).skip(skip).limit(limit);
 
     return { products, total };
-};
+}
 
 
 // Get a single Product by ID

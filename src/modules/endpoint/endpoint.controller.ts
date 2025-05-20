@@ -130,7 +130,7 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
 
 
                     //=============================== send product details message =====================
-                    const messageResult = await sendProductDetailsMessage(pageAccessToken as string, comment_id, productsIds)
+                    const messageResult = await sendProductDetailsMessage(pageAccessToken as string, comment_id, productsIds, userId, customerId)
                     console.log(messageResult, ' messageResult||||||||||||| ++++++++++++++++++ |||||||||||||||',)
 
 

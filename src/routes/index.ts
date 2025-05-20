@@ -8,6 +8,7 @@ import productCarouselRoutes from "../modules/productCarousel/productCarousel.ro
 import automationRoutes from "../modules/automation/automation.route";
 import adminLeadsRoutes from "../modules/adminLeads/adminLeads.route";
 import leadsRoutes from "../modules/leads/leads.route";
+import ordersRoutes from "../modules/orders/orders.route";
 
 
 
@@ -22,6 +23,7 @@ router.use("/product-carousel", productCarouselRoutes);
 router.use("/automation", automationRoutes);
 router.use("/admin-lead", adminLeadsRoutes);
 router.use("/lead", leadsRoutes);
+router.use("/orders", leadsRoutes);
 
 
 export default router;

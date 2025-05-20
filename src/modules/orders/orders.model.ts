@@ -9,7 +9,8 @@ import { IOrder } from "./orders.interface";
 const OrderSchema = new mongoose.Schema<IOrder>(
     {
 
-        userId: { type: String, required: true },
+        userId: { type: String },
+        slug: { type: String, required: true },
         userName: { type: String, required: true },
         customerDetails: {
             name: { type: String, required: true },
@@ -29,13 +30,14 @@ const OrderSchema = new mongoose.Schema<IOrder>(
                 price: { type: Number },
                 tax: { type: Number },
                 quantity: { type: Number },
+                variantName: { type: String },
+                variantImageUrl: { type: String },
             },
         ],
         payment: {
-            paymentMethod: { type: String, enum: ['personal', 'company'], required: true },
-            paymentAccountName: { type: String, required: true },
-            paymentAccountNumber: { type: String, required: true },
-            paymentTypeName: { type: String, enum: ['send-money', 'payment', 'cash-out'], required: true },
+            paymentOperatorName: { type: String },
+            paymentAccountType: { type: String, enum: ['agent', 'personal', 'merchant'], required: true },
+            accountNumber: { type: String },
             transactionId: { type: String, required: true },
             customerAccountNumber: { type: String, required: true },
         },

@@ -1,6 +1,7 @@
 import { IProducts } from "../../types/product.interface";
 import { IProduct } from "../product/product.interface";
 import Product from "../product/product.model";
+import User from "../user/user.model";
 
 interface Category {
     id: string;
@@ -159,12 +160,18 @@ interface replyMessage {
 export async function sendProductDetailsMessage(
     pageAccessToken: string,
     comment_id: string,
-    productIds: string[]
+    productIds: string[],
+    userId: string,
+    customerId: string,
+
 ): Promise<replyMessage> {
 
 
 
     const products = await getProductDetailsFromIds(productIds)
+    const user = await User.findOne({ userId })
+
+    console.log(user?.slug)
 
 
     const payload = {
@@ -189,12 +196,13 @@ export async function sendProductDetailsMessage(
                             "buttons": [
                                 {
                                     "type": "web_url",
-                                    "url": "https://www.google.com/",
+                                    // @ts-ignore
+                                    "url": `https://engagexpart.com/shop/product-details/${item?._id}?customerId=${customerId}?otherProductIds=${JSON.stringify(products?.map(it => it?._id))}`,
                                     "title": "View Details"
                                 },
                                 {
                                     "type": "web_url",
-                                    "url": "https://www.google.com/",
+                                    "url": `https://engagexpart.com/shop/product-details/${item?._id}?customerId=${customerId}?otherProductIds=${JSON.stringify(products?.map(it => it?._id))}`,
                                     "title": "Buy Now"
                                 }
                             ]

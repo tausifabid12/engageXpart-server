@@ -2,6 +2,7 @@
 
 export interface IOrder {
     userId: string
+    slug: string
     userName: string
     customerDetails: {
         name: string
@@ -20,13 +21,14 @@ export interface IOrder {
         price: number
         tax: number
         quantity: number
+        variantName: string
+        variantImageUrl: string
     }[]
 
     payment: {
-        paymentMethod: 'personal' | 'company'
-        paymentAccountName: string
-        paymentAccountNumber: string
-        paymentTypeName: 'send-money' | 'payment' | 'cash-out'
+        paymentOperatorName: string
+        paymentAccountType: 'agent' | 'personal' | 'merchant',
+        accountNumber: string
         customerAccountNumber: string
         transactionId: string
     }
