@@ -28,9 +28,9 @@ export const getLeadsFromDb = async (name?: string, categoryName?: string, categ
 };
 
 
-// Get a single Lead by ID
-export const getLeadByIdFromDb = async (id: string) => {
-    return await Lead.findById(id);
+// Get a single Lead by profileId
+export const getLeadByProfileIdFromDb = async (profileId: string) => {
+    return await Lead.findOne({ profileId });
 };
 
 // Update a Lead by ID

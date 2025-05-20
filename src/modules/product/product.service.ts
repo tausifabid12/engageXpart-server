@@ -11,6 +11,7 @@ export const createProductInDb = async (data: IProduct) => {
 // Get all Products
 export const getProductsFromDb = async (
     ids?: string[],
+    id?: string[],
     name?: string,
     categoryName?: string,
     categoryId?: string,
@@ -22,6 +23,7 @@ export const getProductsFromDb = async (
 
     if (name) filter.name = { $regex: name, $options: "i" };
     if (userId) filter.userId = userId;
+    if (id) filter._id = id;
     if (ids && ids.length > 0) filter._id = { $in: ids }; // 👈 array of product IDs
     if (categoryName) filter.categoryName = { $regex: categoryName, $options: "i" };
     if (categoryId?.length && categoryId?.length > 2) filter.categoryId = categoryId;

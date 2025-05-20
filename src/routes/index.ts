@@ -23,7 +23,7 @@ router.use("/product-carousel", productCarouselRoutes);
 router.use("/automation", automationRoutes);
 router.use("/admin-lead", adminLeadsRoutes);
 router.use("/lead", leadsRoutes);
-router.use("/orders", leadsRoutes);
+router.use("/orders", ordersRoutes);
 
 
 export default router;

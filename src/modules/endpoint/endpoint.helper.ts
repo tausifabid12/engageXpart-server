@@ -108,8 +108,6 @@ export async function replyToComment(
 
     const result = await res.json();
 
-    console.log(result, '|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||')
-
     if (!result || !result.id) {
         throw new Error("Invalid response format");
     }
@@ -197,12 +195,13 @@ export async function sendProductDetailsMessage(
                                 {
                                     "type": "web_url",
                                     // @ts-ignore
-                                    "url": `https://engagexpart.com/shop/product-details/${item?._id}?customerId=${customerId}?otherProductIds=${JSON.stringify(products?.map(it => it?._id))}`,
+                                    "url": `https://engagexpart.com/shop/${user?.slug}/product-details/${item?._id}?customerId=${customerId}&otherProductIds=${products?.map(it => it?._id).join(',')}`,
                                     "title": "View Details"
                                 },
                                 {
                                     "type": "web_url",
-                                    "url": `https://engagexpart.com/shop/product-details/${item?._id}?customerId=${customerId}?otherProductIds=${JSON.stringify(products?.map(it => it?._id))}`,
+                                    // @ts-ignore
+                                    "url": `https://engagexpart.com/shop/${user?.slug}/product-details/${item?._id}?customerId=${customerId}&otherProductIds=${products?.map(it => it?._id).join(',')}`,
                                     "title": "Buy Now"
                                 }
                             ]
@@ -225,9 +224,12 @@ export async function sendProductDetailsMessage(
     });
 
     const result = await res.json();
-    if (!result || !result.id) {
-        throw new Error("Invalid response format");
-    }
+
+    console.log(result, "]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]]")
+
+    // if (!result || !result.id) {
+    //     throw new Error("Invalid response format");
+    // }
 
     return {
         recipient_id: result.recipient_id,
@@ -240,5 +242,8 @@ export async function sendProductDetailsMessage(
 
 // ============= check keyword
 export function containsKeyword(keywords: string[], text: string): boolean {
-    return keywords.some(keyword => text.toLowerCase().includes(keyword.toLowerCase()));
+    if (!keywords?.length) {
+        return false
+    }
+    return keywords?.some(keyword => text.toLowerCase().includes(keyword.toLowerCase()));
 }

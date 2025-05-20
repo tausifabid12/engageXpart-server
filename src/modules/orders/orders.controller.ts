@@ -1,20 +1,56 @@
 import { Request, Response } from "express";
 import { createOrderInDb, deleteOrderFromDb, getOrderByIdFromDb, getOrdersFromDb, updateOrderInDb } from "./orders.service";
+import Lead from "../leads/leads.model";
 
 
 // Create a new Order
 export const createOrder = async (req: Request, res: Response): Promise<void> => {
     try {
 
-        const Order = await createOrderInDb(req.body);
+        const order = await createOrderInDb(req.body);
+        const customer = order.customerDetails;
+        const profileId = customer.profileId;
+
+        if (profileId) {
+            const existingLead = await Lead.findOne({ profileId });
+
+            if (existingLead) {
+                // Update lead
+                existingLead.name = customer.name;
+                existingLead.email = customer.email;
+                existingLead.phone = customer.phone;
+                existingLead.city = customer.city;
+                existingLead.state = customer.state;
+                existingLead.address = customer.address;
+                existingLead.isCustomer = true;
+                existingLead.orderCount += 1;
+                existingLead.orderIds.push(order._id.toString());
+
+                await existingLead.save();
+            } else {
+                // Create new lead
+                await Lead.create({
+                    name: customer.name,
+                    email: customer.email,
+                    phone: customer.phone,
+                    city: customer.city,
+                    state: customer.state,
+                    address: customer.address,
+                    profileId: customer.profileId,
+                    isCustomer: true,
+                    orderCount: 1,
+                    orderIds: [order._id.toString()],
+                });
+            }
+        }
 
         res.status(201).json({
             success: true,
-            data: Order
+            data: order,
         });
     } catch (error) {
-        console.log(error)
-        res.status(400).json({ message: "Error creating ", error });
+        console.error('Error creating order:', error);
+        res.status(400).json({ message: 'Error creating order', error });
     }
 };
 

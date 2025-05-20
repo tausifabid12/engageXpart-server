@@ -1,5 +1,5 @@
 import { Request, Response } from "express";
-import { createLeadInDb, deleteLeadFromDb, getLeadByIdFromDb, getLeadsFromDb, updateLeadInDb } from "./leads.service";
+import { createLeadInDb, deleteLeadFromDb, getLeadByProfileIdFromDb, getLeadsFromDb, updateLeadInDb } from "./leads.service";
 
 
 // Create a new Lead
@@ -37,7 +37,7 @@ export const getLeads = async (req: Request, res: Response): Promise<void> => {
 // Get a single Lead by ID
 export const getLeadById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const Lead = await getLeadByIdFromDb(req.params.id);
+        const Lead = await getLeadByProfileIdFromDb(req.params.id);
         if (!Lead) {
             res.status(404).json({ message: "User flow not found" });
             return;

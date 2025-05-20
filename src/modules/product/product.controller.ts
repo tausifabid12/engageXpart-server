@@ -21,7 +21,7 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
 // Get all Products
 export const getProducts = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { ids, categoryId, categoryName, name, userId, page = '1', limit = '10' }: any = req.query;
+        const { ids, categoryId, id, categoryName, name, userId, page = '1', limit = '10' }: any = req.query;
 
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
@@ -29,7 +29,7 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
 
         const idArray = ids ? ids.split(',') : []; // 👈 convert string to array
 
-        const { products, total } = await getProductsFromDb(idArray, name, categoryName, categoryId, userId, skip, limitNum);
+        const { products, total } = await getProductsFromDb(idArray, id, name, categoryName, categoryId, userId, skip, limitNum);
 
         res.status(200).json({
             success: true,

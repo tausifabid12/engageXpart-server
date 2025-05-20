@@ -11,7 +11,7 @@ const OrderSchema = new mongoose.Schema<IOrder>(
 
         userId: { type: String },
         slug: { type: String, required: true },
-        userName: { type: String, required: true },
+        userName: { type: String },
         customerDetails: {
             name: { type: String, required: true },
             email: { type: String, required: true },
