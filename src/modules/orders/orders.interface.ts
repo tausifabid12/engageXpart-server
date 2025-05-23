@@ -4,6 +4,7 @@ export interface IOrder {
     userId: string
     slug: string
     userName: string
+    status: 'pending' | 'accepted' | 'confirmed' | 'packaging' | 'in-shipping' | 'delivered';
     customerDetails: {
         name: string
         email: string

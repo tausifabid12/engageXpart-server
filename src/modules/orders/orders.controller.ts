@@ -57,20 +57,53 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
 // Get all Orders
 export const getOrders = async (req: Request, res: Response): Promise<void> => {
     try {
-        const page = parseInt(req.query.page as string) || 1;
-        const limit = parseInt(req.query.limit as string) || 10;
-        const skip = (page - 1) * limit;
+        // Destructure filters and pagination params
+        const {
+            profileId,
+            userId,
+            startDate,
+            endDate,
+            page = '1',
+            limit = '10',
+        }: any = req.query;
 
-        const { orders, total } = await getOrdersFromDb(skip, limit);
+        const pageNum = parseInt(page);
+        const limitNum = parseInt(limit);
+        const skip = (pageNum - 1) * limitNum;
+
+        // Build filter object dynamically
+        const filter: any = {};
+
+        if (profileId) {
+            filter["customerDetails.profileId"] = profileId;
+        }
+
+        if (userId) {
+            filter["userId"] = userId;
+        }
+
+        // Date filter on createdAt field (you can change to updatedAt if needed)
+        if (startDate || endDate) {
+            filter.createdAt = {};
+            if (startDate) {
+                filter.createdAt.$gte = new Date(startDate);
+            }
+            if (endDate) {
+                filter.createdAt.$lte = new Date(endDate);
+            }
+        }
+
+        const { orders, total } = await getOrdersFromDb(filter, skip, limitNum);
 
         res.status(200).json({
             success: true,
             total,
-            currentPage: page,
-            totalPages: Math.ceil(total / limit),
-            data: orders
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
+            data: orders,
         });
     } catch (error) {
+        console.error("Error fetching orders:", error);
         res.status(500).json({ message: "Error fetching orders", error });
     }
 };

@@ -19,7 +19,12 @@ const OrderSchema = new mongoose.Schema<IOrder>(
             city: { type: String, required: true },
             state: { type: String, required: true },
             address: { type: String, required: true },
-            profileId: { type: String, required: true, unique: true },
+            profileId: { type: String, required: true },
+        },
+        status: {
+            type: String,
+            enum: ['pending', 'accepted', 'confirmed', 'packaging', 'in-shipping', 'delivered'],
+            default: 'pending'
         },
         products: [
             {

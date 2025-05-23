@@ -21,13 +21,16 @@ export async function getPages(accessToken: string): Promise<FacebookPage[]> {
     const res = await fetch(`https://graph.facebook.com/v9.0/me/accounts?access_token=${accessToken}`);
 
     if (!res.ok) {
-        throw new Error(`Error fetching pages: ${res.statusText}`);
+        console.error(`Error fetching pages: ${res.statusText}`);
+        return [];  // Return empty array on error, don't throw
     }
 
     const result = await res.json();
 
+
     if (!result.data || !Array.isArray(result.data)) {
-        throw new Error("Invalid response format");
+        console.error("Invalid response format in getPages");
+        return [];
     }
 
     return result.data.map((page: any) => ({
@@ -57,13 +60,15 @@ export async function getPagesToken(accessToken: string, pageId: string): Promis
     const res = await fetch(`https://graph.facebook.com/${pageId}?fields=access_token&access_token=${accessToken}`);
 
     if (!res.ok) {
-        throw new Error(`Error fetching pages: ${res.statusText}`);
+        // throw new Error(`Error fetching pages: ${res.statusText}`);
+        console.log(res.statusText)
     }
 
     const result = await res.json();
 
     if (!result) {
-        throw new Error("Invalid response format");
+        // throw new Error("Invalid response format");
+        console.log('some thing went wrong')
     }
 
     return {
@@ -109,7 +114,8 @@ export async function replyToComment(
     const result = await res.json();
 
     if (!result || !result.id) {
-        throw new Error("Invalid response format");
+        // throw new Error("Invalid response format");
+        console.log("Invalid response format");
     }
 
     return { id: result.id };

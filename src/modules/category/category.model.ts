@@ -13,8 +13,8 @@ const CategorySchema = new mongoose.Schema<ICategory>(
         slug: { type: String },
         userSlug: { type: String, required: true },
         name: { type: String, required: true },
-        description: { type: String, required: true },
-        imageUrl: { type: String, required: true },
+        description: { type: String },
+        imageUrl: { type: String },
 
 
     },

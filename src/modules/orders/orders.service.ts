@@ -9,9 +9,13 @@ export const createOrderInDb = async (data: IOrder) => {
 };
 
 // Get all Orders
-export const getOrdersFromDb = async (skip: number = 0, limit: number = 10) => {
-    const total = await Order.countDocuments();
-    const orders = await Order.find().skip(skip).limit(limit);
+export const getOrdersFromDb = async (
+    filter: any = {},
+    skip: number = 0,
+    limit: number = 10
+) => {
+    const total = await Order.countDocuments(filter);
+    const orders = await Order.find(filter).skip(skip).limit(limit);
     return { orders, total };
 };
 

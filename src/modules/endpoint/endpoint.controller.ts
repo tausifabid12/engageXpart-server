@@ -114,14 +114,6 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
                     // const pageData = await getPagesToken(accessToken, pageId)
                     // const pageAccessToken = pageData?.access_token
 
-
-
-
-
-
-
-
-
                     // ============================== reply to comment===================================
                     let randomReplyMessage = getRandomItem(replyMessageArray)
                     const result = await replyToComment(pageAccessToken as string, comment_id, randomReplyMessage)
@@ -136,13 +128,6 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
 
 
                 }
-
-
-
-
-
-
-
 
                 // ==================== save commenter as a lead
 
@@ -160,7 +145,9 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
                         phone: "",
                         profileUrl: "",
                         interestedPostIds: [...leadsData[0]?.interestedPostIds, post_id],
-                        interestedProductId: [...leadsData[0]?.interestedProductId, ...productsIds],
+                        interestedProductId: Array.isArray(productsIds)
+                            ? [...(leadsData[0]?.interestedProductId || []), ...productsIds]
+                            : leadsData[0]?.interestedProductId || [],
                         isCustomer: false,
                         orderCount: 0,
                         orderIds: [],
