@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { createLeadInDb, deleteLeadFromDb, getLeadByProfileIdFromDb, getLeadsFromDb, updateLeadInDb } from "./leads.service";
+import { createLeadInDb, deleteLeadFromDb, getLeadByIdFromDb, getLeadsFromDb, updateLeadInDb } from "./leads.service";
+import { AuthRequest } from "../../types/AuthRequest";
 
 
 // Create a new Lead
@@ -19,25 +20,36 @@ export const createLead = async (req: Request, res: Response): Promise<void> => 
 };
 
 // Get all Leads
-export const getLeads = async (req: Request, res: Response): Promise<void> => {
+export const getLeads = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+        const { ids, categoryId, id, searchQuery, name, page = '1', limit = '10' }: any = req.query;
 
-        const { categoryId, categoryName, name }: any = req.query;
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
 
-        const Leads = await getLeadsFromDb(name, categoryName, categoryId);
-        res.status(201).json({
+        const idArray = ids ? ids.split(',') : [];
+        const userId = req?.user?.userId;
+
+        const { Leads, total } = await getLeadsFromDb(idArray, id, name, searchQuery, categoryId, userId, skip, limitNum);
+
+        res.status(200).json({
             success: true,
+            total,
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
             data: Leads
         });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching s", error });
+        res.status(500).json({ message: "Error fetching Leads", error });
     }
 };
+
 
 // Get a single Lead by ID
 export const getLeadById = async (req: Request, res: Response): Promise<void> => {
     try {
-        const Lead = await getLeadByProfileIdFromDb(req.params.id);
+        const Lead = await getLeadByIdFromDb(req.params.id);
         if (!Lead) {
             res.status(404).json({ message: "User flow not found" });
             return;

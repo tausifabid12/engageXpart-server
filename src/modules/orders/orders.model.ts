@@ -45,6 +45,10 @@ const OrderSchema = new mongoose.Schema<IOrder>(
             accountNumber: { type: String },
             transactionId: { type: String, required: true },
             customerAccountNumber: { type: String, required: true },
+            totalAmount: { type: Number, required: true },
+            deliveryCharge: { type: Number, required: true },
+            tax: { type: Number, required: true },
+            discount: { type: Number, required: true },
         },
 
     },

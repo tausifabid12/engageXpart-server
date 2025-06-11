@@ -20,7 +20,8 @@ export const getAdminLeadsFromDb = async (
     categoryName?: string,
     categoryId?: string,
     page: number = 1,
-    limit: number = 10
+    limit: number = 10,
+    employee?: string,
 ) => {
     const filter: any = {};
 
@@ -32,6 +33,10 @@ export const getAdminLeadsFromDb = async (
     }
     if (categoryId?.length && categoryId?.length > 2) {
         filter.categoryId = categoryId;
+    }
+
+    if (employee) {
+        filter.employee = employee
     }
 
     const skip = (page - 1) * limit;

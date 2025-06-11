@@ -44,12 +44,14 @@ export const createAdminLeads = async (req: Request, res: Response): Promise<voi
 // Get all AdminLeads
 export const getAdminLeads = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { categoryId, categoryName, name, page = "1", limit = "10" }: any = req.query;
+        const { categoryId, categoryName, name, page = "1", limit = "10", employee }: any = req.query;
+
+        console.log(employee)
 
         const paginationPage = parseInt(page, 10);
         const paginationLimit = parseInt(limit, 10);
 
-        const result = await getAdminLeadsFromDb(name, categoryName, categoryId, paginationPage, paginationLimit);
+        const result = await getAdminLeadsFromDb(name, categoryName, categoryId, paginationPage, paginationLimit, employee);
 
         res.status(200).json({
             success: true,

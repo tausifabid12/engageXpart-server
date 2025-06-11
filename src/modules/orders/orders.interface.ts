@@ -5,6 +5,7 @@ export interface IOrder {
     slug: string
     userName: string
     status: 'pending' | 'accepted' | 'confirmed' | 'packaging' | 'in-shipping' | 'delivered';
+    date: Date
     customerDetails: {
         name: string
         email: string
@@ -32,5 +33,9 @@ export interface IOrder {
         accountNumber: string
         customerAccountNumber: string
         transactionId: string
+        totalAmount: number
+        deliveryCharge: number
+        tax: number
+        discount: number
     }
 }

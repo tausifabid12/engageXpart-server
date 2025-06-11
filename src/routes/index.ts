@@ -9,6 +9,8 @@ import automationRoutes from "../modules/automation/automation.route";
 import adminLeadsRoutes from "../modules/adminLeads/adminLeads.route";
 import leadsRoutes from "../modules/leads/leads.route";
 import ordersRoutes from "../modules/orders/orders.route";
+import subscriptionRoutes from "../modules/subscription/subscription.route";
+import messageRoutes from "../modules/message/message.route";
 
 
 
@@ -24,6 +26,8 @@ router.use("/automation", automationRoutes);
 router.use("/admin-lead", adminLeadsRoutes);
 router.use("/lead", leadsRoutes);
 router.use("/orders", ordersRoutes);
+router.use("/subscriptions", subscriptionRoutes);
+router.use("/messages", messageRoutes);
 
 
 export default router;

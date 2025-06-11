@@ -40,6 +40,7 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
                     isCustomer: true,
                     orderCount: 1,
                     orderIds: [order._id.toString()],
+                    lastOrderDate: new Date().toISOString()
                 });
             }
         }

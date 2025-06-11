@@ -36,15 +36,120 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
 
         let entry = body.entry[0]
 
-        console.log(entry)
+        console.log(entry, "_____________________")
+
+
+
+        if (entry?.messaging && entry?.messaging?.length) {
+
+            const messagingItem = entry?.messaging[0]
+
+
+            const senderProfileId = messagingItem?.sender?.id
+            const recipientProfileId = messagingItem?.recipient?.id
+            const messageText = messagingItem?.message?.text
+            const messageId = messagingItem?.message?.mid
+            const timestamp = messagingItem?.timestamp
+
+
+            // ========== find our user account details
+            const userAccount = await Account.findOne({
+                pages: { $elemMatch: { id: recipientProfileId } }
+            });
+
+
+            console.log(senderProfileId, "senderProfileId")
+            console.log(recipientProfileId, "recipientProfileId?.recipient")
+            console.log(messageText, "messageText?.timestamp")
+            console.log(messageId, "messageId?.message")
+            console.log(timestamp, "timestamp?.message")
+
+
+            const userCustomerDetails = await Lead.findOne({ profileId: senderProfileId });
+
+            // create lead if not there update it if its there
+            // add new message for that lead
+            // send message notification using socket io
+
+            // optional send push notification if website is not active
+
+
+
+
+            // ==================== save commenter as a lead
+
+            let leadsData = await Lead.findOne({ profileId: senderProfileId });
+
+
+            if (leadsData && leadsData?._id) {
+
+
+                const messageData = {
+                    userId: userAccount?.userId,
+                    userName: userAccount?.name,
+                    contactName: leadsData?.name,
+                    contactProfileUrl: leadsData?.profileUrl,
+                    contactProfileId: leadsData?.profileId,
+                    messageText: messageText,
+                    imageUrl: '',
+                    videoUrl: '',
+                    docuemntUrl: '',
+                    type: 'text', // default type
+                    templateData: '',
+                    messageId: messageId,
+                    isSeen: false,
+                    time: timestamp,
+                    echo: false,
+                }
+                const resulMesg = await Message.create(messageData);
+
+                let newLead = {
+                    name: "",
+                    profileId: senderProfileId,
+                    source: "facebook",
+                    lastMessageText: messageText,
+                    unseenMesageCount: leadsData?.unseenMesageCount + 1,
+                    lastMessageDate: timestamp
+                }
+
+                const result = await Lead.findByIdAndUpdate(leadsData?._id, newLead, { new: true });
+                console.log(result)
+            } else {
+                let newLead = {
+                    profileId: senderProfileId,
+                    source: "facebook",
+                    lastMessageText: messageText,
+                    unseenMesageCount: 1,
+                    lastMessageDate: timestamp
+                }
+                const resul = await Lead.create(newLead);
+
+                const messageData = {
+                    userId: userAccount?.userId,
+                    userName: userAccount?.name,
+                    contactProfileId: senderProfileId,
+                    messageText: messageText,
+                    type: 'text',
+                    messageId: messageId,
+                    isSeen: false,
+                    time: timestamp,
+                    echo: false,
+                }
+                const resulMesg = await Message.create(messageData);
+                console.log(resul)
+            }
+
+
+        }
+
+
+
 
         // *********************************** Comment Automation Process start ***********************************************
         if (entry.changes && entry.changes?.length) {
 
 
             let webhookEvent = entry.changes[0];
-            console.log(webhookEvent, 'page      ++++++++++++ entry')
-
 
             if (webhookEvent?.field == 'feed' && webhookEvent?.value?.item == 'comment') {
 
@@ -193,8 +298,10 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
         // ***********************************  automation Process end ***********************************************
 
 
-        // ================================== handle message ==========================================
-        // if (entry.messaging && entry.messaging?.length) {
+
+        // *********************************** Page message Process start ***********************************************
+
+        // if (entry?.messaging && entry?.messaging?.length) {
         //     let messagingData = req.body?.entry[0]?.messaging[0]
         //     const time = messagingData?.time
         //     const senderId = messagingData?.sender?.id
@@ -206,70 +313,17 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
         //     const userId = accountData[0]?.userId
         //     const username = accountData[0]?.name
 
-        //     //============= check if user is a lead ======================
-        //     let leadsData = await Lead.find({ profileId: senderId });
-        //     let leadName = leadsData[0]?.name
 
-        //     if (leadName) {
-
-        //         //============== check for previous messages
-        //         let oldMessageData = await Message.find({ senderProfileId: senderId });
-        //         let messageData
-        //         if (oldMessageData[0]?._id) {
-        //             let oldMessages = oldMessageData[0]?.messages
-        //             messageData = {
-        //                 "userId": userId,
-        //                 "userName": username,
-        //                 "receiverProfileId": recipientId,
-        //                 "senderProfileId": senderId,
-        //                 "senderName": "Alice Smith",
-        //                 messages: [...oldMessages,
-        //                 {
-        //                     messageText: message,
-        //                     imageUrl: "",
-        //                     videoUrl: "",
-        //                     type: "text",
-        //                     messageId: messageId,
-        //                     isSeen: false,
-        //                     time: time,
-        //                     echo: false
-        //                 }]
-        //             }
+        //     console.log(time, "time", message, " message", senderId, "senderId", recipientId, "userId", userId)
 
 
-        //             await Message.findByIdAndUpdate(oldMessageData[0]?._id, messageData, { new: true });
-        //         } else {
-        //             messageData = {
-        //                 "userId": userId,
-        //                 "userName": username,
-        //                 "receiverProfileId": recipientId,
-        //                 "senderProfileId": senderId,
-        //                 "senderName": "Alice Smith",
-        //                 messages: [
-        //                     {
-        //                         messageText: message,
-        //                         imageUrl: "",
-        //                         videoUrl: "",
-        //                         type: "text",
-        //                         messageId: messageId,
-        //                         isSeen: false,
-        //                         time: time,
-        //                         echo: false
-        //                     }
-        //                 ]
-        //             }
-        //             await Message.create(messageData);
-        //         }
 
-
-        //     }
 
 
 
 
 
         // }
-
 
 
 

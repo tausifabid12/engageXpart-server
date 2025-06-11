@@ -30,6 +30,7 @@ export interface IAdminLead {
     email: string;
     phone: string;
     whatsapp: string;
+    employee: string;
     source: LeadSource;
     sourceUrl: string;
     businessSize: string;

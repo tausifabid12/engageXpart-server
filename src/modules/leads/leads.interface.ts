@@ -1,6 +1,7 @@
 
 
 export interface ILead {
+    userId: string
     name: string
     email: string;
     phone: string;
@@ -15,5 +16,9 @@ export interface ILead {
     city: string
     profileId: string
     source: 'facebook' | 'instagram'
+    lastOrderDate: Date
+    lastMessageDate: Date
+    lastMessageText: string
+    unseenMesageCount: number
 
 }

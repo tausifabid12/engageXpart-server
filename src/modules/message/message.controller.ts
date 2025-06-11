@@ -5,22 +5,44 @@ import { createMessageInDb, deleteMessageFromDb, getMessageByIdFromDb, getMessag
 // Create a new Message
 export const createMessage = async (req: Request, res: Response): Promise<void> => {
     try {
+
         const Message = await createMessageInDb(req.body);
-        res.status(201).json(Message);
+
+        res.status(201).json({
+            success: true,
+            data: Message
+        });
     } catch (error) {
+        console.log(error)
         res.status(400).json({ message: "Error creating ", error });
     }
 };
 
 // Get all Messages
-export const getMessages = async (_req: Request, res: Response): Promise<void> => {
+export const getMessages = async (req: Request, res: Response): Promise<void> => {
     try {
-        const Messages = await getMessagesFromDb();
-        res.json(Messages);
+        const { ids, profileId, id, searchQuery, name, userId, page = '1', limit = '10' }: any = req.query;
+
+        const pageNum = parseInt(page, 10);
+        const limitNum = parseInt(limit, 10);
+        const skip = (pageNum - 1) * limitNum;
+
+        const idArray = ids ? ids.split(',') : []; // 👈 convert string to array
+
+        const { Messages, total } = await getMessagesFromDb(idArray, id, name, searchQuery, profileId, userId, skip, limitNum);
+
+        res.status(200).json({
+            success: true,
+            total,
+            currentPage: pageNum,
+            totalPages: Math.ceil(total / limitNum),
+            data: Messages
+        });
     } catch (error) {
-        res.status(500).json({ message: "Error fetching s", error });
+        res.status(500).json({ message: "Error fetching Messages", error });
     }
 };
+
 
 // Get a single Message by ID
 export const getMessageById = async (req: Request, res: Response): Promise<void> => {
@@ -30,7 +52,10 @@ export const getMessageById = async (req: Request, res: Response): Promise<void>
             res.status(404).json({ message: "User flow not found" });
             return;
         }
-        res.json(Message);
+        res.status(201).json({
+            success: true,
+            data: Message
+        });
     } catch (error) {
         res.status(500).json({ message: "Error fetching ", error });
     }
@@ -44,7 +69,10 @@ export const updateMessage = async (req: Request, res: Response): Promise<void> 
             res.status(404).json({ message: "User flow not found" });
             return;
         }
-        res.json(Message);
+        res.status(201).json({
+            success: true,
+            data: Message
+        });
     } catch (error) {
         res.status(500).json({ message: "Error updating ", error });
     }
