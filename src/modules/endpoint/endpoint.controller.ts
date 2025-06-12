@@ -36,7 +36,9 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
 
         let entry = body.entry[0]
 
-        console.log(entry, "_____________________")
+        let pageId = entry?.id
+
+        console.log(JSON.stringify(entry), "_____________________")
 
 
 
@@ -100,6 +102,7 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
                     isSeen: false,
                     time: timestamp,
                     echo: false,
+                    pageId: pageId
                 }
                 const resulMesg = await Message.create(messageData);
 
@@ -243,30 +246,28 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
                 console.log(leadsData, '|||||||||||||||||||')
 
                 if (leadsData && leadsData[0]?._id) {
+
+
+                    console.log('jere  +++++++++++++++++++++++++++++++++++++++++++++')
                     let newLead = {
                         name: customerName,
                         profileId: customerId,
-                        email: "",
-                        phone: "",
-                        profileUrl: "",
                         interestedPostIds: [...leadsData[0]?.interestedPostIds, post_id],
                         interestedProductId: Array.isArray(productsIds)
                             ? [...(leadsData[0]?.interestedProductId || []), ...productsIds]
                             : leadsData[0]?.interestedProductId || [],
                         isCustomer: false,
-                        orderCount: 0,
-                        orderIds: [],
-                        address: "",
-                        state: "",
-                        city: "",
                         source: "facebook"
                     }
 
-                    Lead.findByIdAndUpdate(leadsData[0]?._id, newLead, { new: true });
+                    console.log(newLead, 'here ')
+
+                    const result = await Lead.findByIdAndUpdate(leadsData[0]?._id, newLead, { new: true });
+                    console.log(result, "]]]]]]]]]]]]]]]]]]]]]]]]")
 
                 } else {
                     let newLead = {
-                        name: customerName || "",
+                        name: customerName,
                         profileId: customerId,
                         email: "",
                         phone: "",
@@ -281,6 +282,7 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
                         city: "",
                         source: "facebook"
                     }
+                    console.log(newLead)
                     await Lead.create(newLead);
                 }
 

@@ -7,8 +7,9 @@ import { errorHandler } from "./middlewares/error.middleware";
 import http from "http";
 import { Server } from "socket.io";
 import jwt from "jsonwebtoken";
-import { socketAuthMiddleware } from "./middlewares/socket.middleware";
-import { socketConnectionHandler } from "./utils/socketHandler";
+import { socketAuthMiddleware } from "./middlewares/socketAuthMiddleware";
+import { socketConnectionHandler } from "./helpers/socketConnectionHandler";
+
 
 
 
@@ -36,7 +37,10 @@ app.use(express.json());
 app.use("/api/v1", routes);
 app.use(errorHandler);
 
+// 🚨 Attach the middleware here
 io.use(socketAuthMiddleware);
+
+// 🔌 Then handle the connection
 socketConnectionHandler(io);
 
 export { io };

@@ -140,7 +140,7 @@ export async function checkProductStock(productIds: string[]): Promise<boolean> 
 
 
 
-const getProductDetailsFromIds = async (productIds: string[]): Promise<IProduct[]> => {
+export const getProductDetailsFromIds = async (productIds: string[]): Promise<IProduct[]> => {
     try {
         const products = await Product.find({ _id: { $in: productIds } });
         return products;

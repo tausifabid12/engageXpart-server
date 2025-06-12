@@ -1,12 +1,96 @@
 import { Request, Response } from "express";
 import { createMessageInDb, deleteMessageFromDb, getMessageByIdFromDb, getMessagesFromDb, updateMessageInDb } from "./message.service";
+import { IMessage } from "./message.interface";
+import { sendFacebookMessage } from "../../helpers/sendFacebookMessage";
+import Account from "../accounts/accounts.model";
+import { unwatchFile } from "fs";
+import { sendFacebookGenericTemplate } from "../../helpers/sendFacebookGenericTemplate";
 
 
 // Create a new Message
 export const createMessage = async (req: Request, res: Response): Promise<void> => {
     try {
 
-        const Message = await createMessageInDb(req.body);
+        const data: IMessage = req.body
+
+        const userAccount = await Account.findOne({
+            pages: { $elemMatch: { id: data?.pageId } }
+        });
+
+        const pageData = userAccount?.pages?.find(item => item?.id == data?.pageId)
+
+        // ============================ handle text message ==========================
+
+        if (data?.type == "text" && pageData) {
+            try {
+                const response = await sendFacebookMessage(
+                    pageData?.id,
+                    pageData?.access_token,
+                    {
+                        recipient: { id: data?.contactProfileId },
+                        message: { text: data?.messageText },
+                        messaging_type: 'RESPONSE'
+                    }
+                );
+                console.log('✅ Text Message sent:', response);
+            } catch (error) {
+                console.error('❌ Text Message error:', error);
+            }
+        }
+
+        // ============================ handle image  message ==========================
+
+        if (data?.type == "image" && pageData) {
+
+            try {
+                const response = await sendFacebookMessage(
+                    pageData?.id,
+                    pageData?.access_token,
+                    {
+                        recipient: { id: data?.contactProfileId },
+                        message: {
+                            attachments: data?.imageUrls?.map(item => {
+                                return {
+                                    type: 'image',
+                                    payload: {
+                                        url: item,
+                                        is_reusable: true
+                                    }
+                                }
+                            })
+
+                        },
+                        messaging_type: 'RESPONSE'
+                    }
+                );
+                console.log('✅ Attachment Message sent:', response);
+            } catch (error) {
+                console.error('❌ Attachment Message error:', error);
+            }
+        }
+
+        // =========================== product carousel ================== message
+        if (data?.type == "promotion" && pageData) {
+
+
+            try {
+                const response = await sendFacebookGenericTemplate(
+                    pageData?.id,
+                    pageData?.access_token,
+                    data?.contactProfileId,
+                    JSON.parse(data?.templateData),
+                    userAccount?.userId as string
+
+                );
+                console.log('✅ Attachment Message sent:', response);
+            } catch (error) {
+                console.error('❌ Attachment Message error:', error);
+            }
+        }
+
+
+
+        const Message = await createMessageInDb(data);
 
         res.status(201).json({
             success: true,
