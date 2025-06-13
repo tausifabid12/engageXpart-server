@@ -8,6 +8,7 @@ import { getRandomItem } from '../../helpers/getRandomItemFromArray';
 import Lead from '../leads/leads.model';
 import Message from '../message/message.model';
 import { chownSync } from 'fs';
+import { io } from '../../server';
 
 const VERIFY_TOKEN = "your_verify_token";
 
@@ -37,11 +38,13 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
         let entry = body.entry[0]
 
         let pageId = entry?.id
+        let UserPageId = entry?.id
 
         console.log(JSON.stringify(entry), "_____________________")
+        console.log(pageId, "_____________________                                             pageId")
 
 
-
+        // *********************************** handle messages start ***********************************************
         if (entry?.messaging && entry?.messaging?.length) {
 
             const messagingItem = entry?.messaging[0]
@@ -60,22 +63,16 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
             });
 
 
-            console.log(senderProfileId, "senderProfileId")
-            console.log(recipientProfileId, "recipientProfileId?.recipient")
-            console.log(messageText, "messageText?.timestamp")
-            console.log(messageId, "messageId?.message")
-            console.log(timestamp, "timestamp?.message")
+            io.to(userAccount?.userId as string).emit("messages", {
+                title: "New Alert!",
+                message: "You have a new message.",
+            });
+
+
+
 
 
             const userCustomerDetails = await Lead.findOne({ profileId: senderProfileId });
-
-            // create lead if not there update it if its there
-            // add new message for that lead
-            // send message notification using socket io
-
-            // optional send push notification if website is not active
-
-
 
 
             // ==================== save commenter as a lead
@@ -107,12 +104,11 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
                 const resulMesg = await Message.create(messageData);
 
                 let newLead = {
-                    name: "",
                     profileId: senderProfileId,
                     source: "facebook",
                     lastMessageText: messageText,
                     unseenMesageCount: leadsData?.unseenMesageCount + 1,
-                    lastMessageDate: timestamp
+                    lastMessageDate: timestamp,
                 }
 
                 const result = await Lead.findByIdAndUpdate(leadsData?._id, newLead, { new: true });
@@ -123,7 +119,8 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
                     source: "facebook",
                     lastMessageText: messageText,
                     unseenMesageCount: 1,
-                    lastMessageDate: timestamp
+                    lastMessageDate: timestamp,
+                    pageId: pageId
                 }
                 const resul = await Lead.create(newLead);
 
@@ -257,7 +254,7 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
                             ? [...(leadsData[0]?.interestedProductId || []), ...productsIds]
                             : leadsData[0]?.interestedProductId || [],
                         isCustomer: false,
-                        source: "facebook"
+                        source: "facebook",
                     }
 
                     console.log(newLead, 'here ')
@@ -280,7 +277,8 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
                         address: "",
                         state: "",
                         city: "",
-                        source: "facebook"
+                        source: "facebook",
+                        pageId: UserPageId
                     }
                     console.log(newLead)
                     await Lead.create(newLead);

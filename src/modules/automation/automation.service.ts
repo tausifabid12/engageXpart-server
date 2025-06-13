@@ -14,12 +14,16 @@ export const getAutomationsFromDb = async (
     categoryName?: string,
     categoryId?: string,
     skip: number = 0,
-    limit: number = 10
+    limit: number = 10,
+    userId?: string
 ) => {
     const filter: any = {};
 
     if (name) {
         filter.name = { $regex: name, $options: "i" };
+    }
+    if (userId) {
+        filter.userId = userId
     }
     if (categoryName) {
         filter.categoryName = { $regex: categoryName, $options: "i" };

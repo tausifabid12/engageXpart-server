@@ -22,6 +22,7 @@ export const createLead = async (req: Request, res: Response): Promise<void> => 
 // Get all Leads
 export const getLeads = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
+
         const { ids, categoryId, id, searchQuery, name, page = '1', limit = '10' }: any = req.query;
 
         const pageNum = parseInt(page, 10);
@@ -29,7 +30,7 @@ export const getLeads = async (req: AuthRequest, res: Response): Promise<void> =
         const skip = (pageNum - 1) * limitNum;
 
         const idArray = ids ? ids.split(',') : [];
-        const userId = req?.user?.userId;
+        const userId = req?.user?.id;
 
         const { Leads, total } = await getLeadsFromDb(idArray, id, name, searchQuery, categoryId, userId, skip, limitNum);
 

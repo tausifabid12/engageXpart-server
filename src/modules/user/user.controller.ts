@@ -4,6 +4,8 @@ import { generateToken } from "../../utils/jwt";
 import User from "./user.model";
 import { IUser } from "./user.interface";
 import bcrypt from "bcryptjs";
+import Order from "../orders/orders.model";
+import Lead from "../leads/leads.model";
 
 /**
  * Register a new user
@@ -69,10 +71,6 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
             ? await findUserByEmail(identifier)
             : await findUserByPhone(identifier);
 
-
-
-        console.log(user, '{{{{{{{{{{{{{{{{{{{')
-
         if (!user) {
             res.status(400).json({ message: "Invalid credentials" });
             return;
@@ -81,8 +79,6 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         // Verify password
         const isMatch = await bcrypt.compare(password, user[0].password);
 
-
-        console.log(isMatch, 'PPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPPP')
         if (!isMatch) {
             res.status(400).json({ message: "Invalid credentials" });
             return;
@@ -102,9 +98,6 @@ export const loginUser = async (req: Request, res: Response): Promise<void> => {
         res.status(500).json({ message: error.message });
     }
 };
-
-
-
 
 export const getUsers = async (req: Request, res: Response): Promise<void> => {
     // try {
@@ -205,35 +198,134 @@ export const getUsers = async (req: Request, res: Response): Promise<void> => {
     // }
 };
 
-
-
-// Update a Product by ID
+// Update a User by ID
 export const updateUser = async (req: Request, res: Response): Promise<void> => {
     try {
-        const Product = await updateUserInDb(req.params.userId, req.body);
-        if (!Product) {
+        const User = await updateUserInDb(req.params.userId, req.body);
+        if (!User) {
             res.status(404).json({ message: "User  not found" });
             return;
         }
         res.status(201).json({
             success: true,
-            data: Product
+            data: User
         });
     } catch (error) {
         res.status(500).json({ message: "Error updating ", error });
     }
 };
 
-// Delete a Product by ID
+// Delete a User by ID
 export const deleteUser = async (req: Request, res: Response): Promise<void> => {
     try {
-        const Product = await deleteUserFromDb(req.params.id);
-        if (!Product) {
+        const User = await deleteUserFromDb(req.params.id);
+        if (!User) {
             res.status(404).json({ message: "User  not found" });
             return;
         }
         res.json({ message: " deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: "Error deleting ", error });
+    }
+};
+
+
+
+// ========= user statistics
+
+interface BreakdownItem {
+    _id: string;
+    count: number;
+}
+
+const extractSingleCount = (facetResult: any, key: string): number =>
+    facetResult[key]?.[0]?.count || 0;
+
+const extractSingleSum = (facetResult: any, key: string): number =>
+    facetResult[key]?.[0]?.total || 0;
+
+const convertArrayToMap = (array: BreakdownItem[]): Record<string, number> =>
+    array.reduce((acc, { _id, count }) => {
+        if (_id) acc[_id] = count;
+        return acc;
+    }, {} as Record<string, number>);
+
+export const getStatistics = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const userId = req.query.userId as string;
+
+        const [orderResult] = await Order.aggregate([
+            { $match: { userId } },
+            {
+                $facet: {
+                    totalOrders: [{ $count: 'count' }],
+                    totalSellAmount: [{ $group: { _id: null, total: { $sum: '$payment.totalAmount' } } }],
+                    statusBreakdown: [{ $group: { _id: '$status', count: { $sum: 1 } } }]
+                }
+            },
+            {
+                $project: {
+                    totalOrders: { $arrayElemAt: ['$totalOrders.count', 0] },
+                    totalSellAmount: { $arrayElemAt: ['$totalSellAmount.total', 0] },
+                    statusBreakdown: 1
+                }
+            }
+        ]) || {};
+
+        const orderStatistics = {
+            totalOrders: orderResult.totalOrders || 0,
+            totalSellAmount: orderResult.totalSellAmount || 0,
+            statusCount: convertArrayToMap(orderResult.statusBreakdown || [])
+        };
+
+        const [leadResult] = await Lead.aggregate([
+            { $match: { userId } },
+            {
+                $facet: {
+                    totalLeads: [{ $count: 'count' }],
+                    totalCustomers: [
+                        { $match: { isCustomer: true } },
+                        { $count: 'count' }
+                    ],
+                    customersByCity: [
+                        { $match: { isCustomer: true } },
+                        { $group: { _id: '$city', count: { $sum: 1 } } }
+                    ],
+                    customersByState: [
+                        { $match: { isCustomer: true } },
+                        { $group: { _id: '$state', count: { $sum: 1 } } }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    totalLeads: { $arrayElemAt: ['$totalLeads.count', 0] },
+                    totalCustomers: { $arrayElemAt: ['$totalCustomers.count', 0] },
+                    customersByCity: 1,
+                    customersByState: 1
+                }
+            }
+        ]) || {};
+
+        const leadStatistics = {
+            totalLeads: leadResult.totalLeads || 0,
+            totalCustomers: leadResult.totalCustomers || 0,
+            customersByCity: convertArrayToMap(leadResult.customersByCity || []),
+            customersByState: convertArrayToMap(leadResult.customersByState || [])
+        };
+
+        res.status(200).json({
+            success: true,
+            data: {
+                orderStatistics,
+                leadStatistics
+            }
+        });
+    } catch (error) {
+        console.error('Error fetching statistics:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Failed to fetch statistics'
+        });
     }
 };

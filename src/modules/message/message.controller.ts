@@ -1,15 +1,20 @@
 import { Request, Response } from "express";
-import { createMessageInDb, deleteMessageFromDb, getMessageByIdFromDb, getMessagesFromDb, updateMessageInDb } from "./message.service";
+import { createMessageInDb, deleteMessageFromDb, getMessageByIdFromDb, getMessagesFromDb, markAllMessagesAsSeen, updateMessageInDb } from "./message.service";
 import { IMessage } from "./message.interface";
 import { sendFacebookMessage } from "../../helpers/sendFacebookMessage";
 import Account from "../accounts/accounts.model";
 import { unwatchFile } from "fs";
 import { sendFacebookGenericTemplate } from "../../helpers/sendFacebookGenericTemplate";
+import { io } from "../../server";
+import { AuthRequest } from "../../types/AuthRequest";
 
 
 // Create a new Message
 export const createMessage = async (req: Request, res: Response): Promise<void> => {
     try {
+
+
+
 
         const data: IMessage = req.body
 
@@ -103,13 +108,14 @@ export const createMessage = async (req: Request, res: Response): Promise<void> 
 };
 
 // Get all Messages
-export const getMessages = async (req: Request, res: Response): Promise<void> => {
+export const getMessages = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { ids, profileId, id, searchQuery, name, userId, page = '1', limit = '10' }: any = req.query;
+        const { ids, profileId, id, searchQuery, name, page = '1', limit = '10' }: any = req.query;
 
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
         const skip = (pageNum - 1) * limitNum;
+        const userId = req?.user?.id;
 
         const idArray = ids ? ids.split(',') : []; // 👈 convert string to array
 
@@ -173,5 +179,26 @@ export const deleteMessage = async (req: Request, res: Response): Promise<void> 
         res.json({ message: "User flow deleted successfully" });
     } catch (error) {
         res.status(500).json({ message: "Error deleting ", error });
+    }
+};
+
+
+
+// handle seen message
+export const markMessagesSeenController = async (req: Request, res: Response): Promise<void> => {
+    const { userId, profileId } = req.body;
+
+    if (!profileId) {
+        res.status(400).json({ error: 'vendorId is required' });
+    }
+
+    try {
+        const result = await markAllMessagesAsSeen(userId, profileId);
+        res.status(200).json({
+            message: 'Messages marked as seen',
+            updatedCount: result
+        });
+    } catch (error: any) {
+        res.status(500).json({ error: error.message });
     }
 };

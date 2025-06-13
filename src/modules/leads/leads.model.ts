@@ -28,6 +28,7 @@ const LeadILeadSchema = new mongoose.Schema<ILead>(
         state: { type: String },
         city: { type: String },
         profileId: { type: String, unique: true },
+        pageId: { type: String },
         source: { type: String, enum: ['facebook', 'instagram'], default: 'facebook' }
 
     },

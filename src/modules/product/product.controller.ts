@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { createProductInDb, deleteProductFromDb, getProductByIdFromDb, getProductsFromDb, updateProductInDb } from "./product.service";
+import { AuthRequest } from "../../types/AuthRequest";
 
 
 // Create a new Product
@@ -19,13 +20,14 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
 };
 
 // Get all Products
-export const getProducts = async (req: Request, res: Response): Promise<void> => {
+export const getProducts = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { ids, categoryId, id, categoryName, name, userId, page = '1', limit = '10' }: any = req.query;
+        const { ids, categoryId, id, categoryName, name, page = '1', limit = '10' }: any = req.query;
 
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
         const skip = (pageNum - 1) * limitNum;
+        const userId = req?.user?.id;
 
         const idArray = ids ? ids.split(',') : []; // 👈 convert string to array
 

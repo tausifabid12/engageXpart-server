@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { createSubscriptionInDb, deleteSubscriptionFromDb, getSubscriptionByIdFromDb, getSubscriptionsFromDb, updateSubscriptionInDb } from "./subscription.service";
+import { AuthRequest } from "../../types/AuthRequest";
 
 
 // Create a new Subscription
@@ -18,13 +19,14 @@ export const createSubscription = async (req: Request, res: Response): Promise<v
 
 
 
-export const getSubscriptions = async (req: Request, res: Response): Promise<void> => {
+export const getSubscriptions = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { ids, categoryId, id, userPhoneNumber, userName, userId, page = '1', limit = '10' }: any = req.query;
+        const { ids, categoryId, id, userPhoneNumber, userName, page = '1', limit = '10' }: any = req.query;
 
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
         const skip = (pageNum - 1) * limitNum;
+        const userId = req?.user?.id;
 
         const idArray = ids ? ids.split(',') : []; // 👈 convert string to array
 

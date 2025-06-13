@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { createAutomationInDb, deleteAutomationFromDb, getAutomationByIdFromDb, getAutomationsFromDb, updateAutomationInDb } from "./automation.service";
+import { AuthRequest } from "../../types/AuthRequest";
 
 
 // Create a new Automation
@@ -19,15 +20,16 @@ export const createAutomation = async (req: Request, res: Response): Promise<voi
 };
 
 // Get all Automations
-export const getAutomations = async (req: Request, res: Response): Promise<void> => {
+export const getAutomations = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         const { categoryId, categoryName, name, page = '1', limit = '10' }: any = req.query;
 
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
         const skip = (pageNum - 1) * limitNum;
+        const userId = req?.user?.id;
 
-        const { automations, total } = await getAutomationsFromDb(name, categoryName, categoryId, skip, limitNum);
+        const { automations, total } = await getAutomationsFromDb(name, categoryName, categoryId, skip, limitNum, userId);
 
         res.status(200).json({
             success: true,

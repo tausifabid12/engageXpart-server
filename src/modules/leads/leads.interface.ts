@@ -15,10 +15,10 @@ export interface ILead {
     state: string
     city: string
     profileId: string
+    pageId: string
     source: 'facebook' | 'instagram'
     lastOrderDate: Date
     lastMessageDate: Date
     lastMessageText: string
     unseenMesageCount: number
-
 }

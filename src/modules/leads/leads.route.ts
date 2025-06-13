@@ -6,13 +6,14 @@ import {
     updateLead,
     deleteLead,
 } from "./leads.controller";
+import { authenticateUser } from "../../middlewares/auth.middleware";
 
 const router = express.Router();
 
-router.post("/create", createLead);
-router.get("/", getLeads);
-router.get("/:id", getLeadById);
-router.post("/:id", updateLead);
-router.delete("/:id", deleteLead);
+router.post("/create", authenticateUser, createLead);
+router.get("/", authenticateUser, getLeads);
+router.get("/:id", authenticateUser, getLeadById);
+router.post("/:id", authenticateUser, updateLead);
+router.delete("/:id", authenticateUser, deleteLead);
 
 export default router;

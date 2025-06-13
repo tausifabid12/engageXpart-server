@@ -1,3 +1,4 @@
+import Lead from "../leads/leads.model";
 import { IMessage } from "./message.interface";
 import Message from "./message.model";
 
@@ -53,4 +54,42 @@ export const updateMessageInDb = async (id: string, data: Partial<IMessage>) => 
 // Delete a Message by ID
 export const deleteMessageFromDb = async (id: string) => {
     return await Message.findByIdAndDelete(id);
+};
+
+
+export const markAllMessagesAsSeen = async (
+    userId: string,
+    profileId: string
+) => {
+    try {
+        console.log(userId, profileId, "=========  (((((((((((((((((((((((((")
+
+        // ✅ Update unseenMessageCount to 0
+        const leadUpdateRes = await Lead.updateOne(
+            { userId, profileId },
+            { $set: { unseenMesageCount: 0 } }
+        );
+
+        console.log("Lead update result:", leadUpdateRes);
+
+        if (leadUpdateRes.matchedCount === 0) {
+            console.warn("No Lead document matched the criteria.");
+        }
+
+        // ✅ Mark all unseen messages from that contact as seen
+        const messageUpdateRes = await Message.updateMany(
+            { userId, contactProfileId: profileId, isSeen: false },
+            { $set: { isSeen: true } }
+        );
+
+        console.log("Messages marked as seen:", messageUpdateRes);
+
+        return {
+            leadUpdate: leadUpdateRes,
+            messageUpdate: messageUpdateRes
+        };
+    } catch (error: any) {
+        console.error("Error in markAllMessagesAsSeen:", error.message);
+        throw new Error(`Failed to update messages: ${error.message}`);
+    }
 };

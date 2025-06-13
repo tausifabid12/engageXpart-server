@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
 import { createCategoryInDb, deleteCategoryFromDb, getCategoryByIdFromDb, getCategorysFromDb, updateCategoryInDb } from "./category.service";
+import { AuthRequest } from "../../types/AuthRequest";
 
 
 // Create a new Category
@@ -20,13 +21,14 @@ export const createCategory = async (req: Request, res: Response): Promise<void>
 };
 
 // Get all Categorys
-export const getCategorys = async (req: Request, res: Response): Promise<void> => {
+export const getCategorys = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-        const { id, userId, name, page = '1', limit = '10' }: any = req.query;
+        const { id, name, page = '1', limit = '10' }: any = req.query;
 
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
         const skip = (pageNum - 1) * limitNum;
+        const userId = req?.user?.id;
 
         const { categories, total } = await getCategorysFromDb(id, userId, name, skip, limitNum);
 

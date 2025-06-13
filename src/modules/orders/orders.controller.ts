@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { createOrderInDb, deleteOrderFromDb, getOrderByIdFromDb, getOrdersFromDb, updateOrderInDb } from "./orders.service";
 import Lead from "../leads/leads.model";
+import { sendReceiptTemplate } from "../../helpers/sendReceiptTemplate";
+import { AuthRequest } from "../../types/AuthRequest";
 
 
 // Create a new Order
@@ -11,6 +13,8 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
         const customer = order.customerDetails;
         const profileId = customer.profileId;
 
+
+        // ====================== update lead data ============================
         if (profileId) {
             const existingLead = await Lead.findOne({ profileId });
 
@@ -45,6 +49,55 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
             }
         }
 
+        // ==================== send order placed message to user ==============
+
+
+        sendReceiptTemplate({
+            psid: profileId,
+            accessToken: "<PAGE_ACCESS_TOKEN>",
+            customerName: "Stephane Crozatier",
+            orderNumber: "12345678902",
+            currency: "USD",
+            paymentMethod: "Visa 2345",
+            orderUrl: "http://originalcoastclothing.com/order?order_id=123456",
+            timestamp: "1428444852",
+            address: {
+                street_1: "1 Hacker Way",
+                city: "Menlo Park",
+                postal_code: "94025",
+                state: "CA",
+                country: "US"
+            },
+            summary: {
+                subtotal: 75.00,
+                shipping_cost: 4.95,
+                total_tax: 6.19,
+                total_cost: 56.14
+            },
+            adjustments: [
+                { name: "New Customer Discount", amount: 20 },
+                { name: "$10 Off Coupon", amount: 10 }
+            ],
+            elements: [
+                {
+                    title: "Classic White T-Shirt",
+                    subtitle: "100% Soft and Luxurious Cotton",
+                    quantity: 2,
+                    price: 50,
+                    currency: "USD",
+                    image_url: "http://originalcoastclothing.com/img/whiteshirt.png"
+                },
+                {
+                    title: "Classic Gray T-Shirt",
+                    subtitle: "100% Soft and Luxurious Cotton",
+                    quantity: 1,
+                    price: 25,
+                    currency: "USD",
+                    image_url: "http://originalcoastclothing.com/img/grayshirt.png"
+                }
+            ]
+        });
+
         res.status(201).json({
             success: true,
             data: order,
@@ -56,18 +109,18 @@ export const createOrder = async (req: Request, res: Response): Promise<void> =>
 };
 
 // Get all Orders
-export const getOrders = async (req: Request, res: Response): Promise<void> => {
+export const getOrders = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
         // Destructure filters and pagination params
         const {
             profileId,
-            userId,
             startDate,
             endDate,
             page = '1',
             limit = '10',
         }: any = req.query;
 
+        const userId = req?.user?.id;
         const pageNum = parseInt(page);
         const limitNum = parseInt(limit);
         const skip = (pageNum - 1) * limitNum;

@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { createAccountInDb, deleteAccountFromDb, getAccountByIdFromDb, getAccountsFromDb, updateAccountInDb } from "./accounts.service";
 import Account from "./accounts.model";
+import { AuthRequest } from "../../types/AuthRequest";
 
 // Create a new Account
 export const createAccount = async (req: Request, res: Response): Promise<void> => {
@@ -35,12 +36,13 @@ export const createAccount = async (req: Request, res: Response): Promise<void> 
 };
 
 // Get all Accounts
-export const getAccounts = async (req: Request, res: Response): Promise<void> => {
+export const getAccounts = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
 
-        const {
-            userId
-        } = req.query;
+
+        const userId = req?.user?.id;
+
+        console.log(userId, 'user id')
 
         const Accounts = await getAccountsFromDb(userId);
 

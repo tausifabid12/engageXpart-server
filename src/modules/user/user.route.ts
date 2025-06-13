@@ -1,12 +1,12 @@
 import express from "express";
-import { registerUser, getUsers, loginUser, updateUser, deleteUser } from "./user.controller";
-import { authenticateUser } from "../../middlewares/auth.middleware";
-import { checkSubscription } from "../../middlewares/checkSubscription.middlewate";
+import { registerUser, getUsers, loginUser, updateUser, deleteUser, getStatistics } from "./user.controller";
+
 
 const router = express.Router();
 
 router.post("/register", registerUser);
 router.post("/login", loginUser);
+router.get("/statistics", getStatistics);
 
 // router.get("/", authenticateUser, checkSubscription, getUsers);
 router.get("/", getUsers);
