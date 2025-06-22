@@ -2,6 +2,8 @@ import { ILead } from "./leads.interface";
 import Lead from "./leads.model";
 
 
+
+
 // Create a new Lead
 export const createLeadInDb = async (data: ILead) => {
     return await Lead.create(data);
@@ -12,7 +14,7 @@ export const getLeadsFromDb = async (
     ids?: string[],
     id?: string[],
     name?: string,
-    searchQuery?: string,
+    categoryName?: string,
     categoryId?: string,
     userId?: string,
     skip: number = 0,
@@ -24,19 +26,15 @@ export const getLeadsFromDb = async (
     if (userId) filter.userId = userId;
     if (id) filter._id = id;
     if (ids && ids.length > 0) filter._id = { $in: ids }; // 👈 array of Lead IDs
-
-
-    if (searchQuery) filter.name = { $regex: searchQuery, $options: "i" };
-
-
-
+    if (categoryName) filter.categoryName = { $regex: categoryName, $options: "i" };
     if (categoryId?.length && categoryId?.length > 2) filter.categoryId = categoryId;
 
     const total = await Lead.countDocuments(filter);
-    const Leads = await Lead.find(filter).skip(skip).limit(limit);
+    const Leads = await Lead.find(filter).sort({ lastMessageTime: -1 }).skip(skip).limit(limit);
 
     return { Leads, total };
 }
+
 
 
 // Get a single Lead by ID

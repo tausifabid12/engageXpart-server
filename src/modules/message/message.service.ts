@@ -3,6 +3,7 @@ import { IMessage } from "./message.interface";
 import Message from "./message.model";
 
 
+
 // Create a new Message
 export const createMessageInDb = async (data: IMessage) => {
     return await Message.create(data);
@@ -13,8 +14,8 @@ export const getMessagesFromDb = async (
     ids?: string[],
     id?: string[],
     name?: string,
-    searchQuery?: string,
-    profileId?: string,
+    contactProfileId?: string,
+    categoryId?: string,
     userId?: string,
     skip: number = 0,
     limit: number = 10
@@ -23,16 +24,10 @@ export const getMessagesFromDb = async (
 
     if (name) filter.name = { $regex: name, $options: "i" };
     if (userId) filter.userId = userId;
-    if (profileId) filter.contactProfileId = profileId;
     if (id) filter._id = id;
     if (ids && ids.length > 0) filter._id = { $in: ids }; // 👈 array of Message IDs
-
-
-    if (searchQuery) filter.name = { $regex: searchQuery, $options: "i" };
-
-
-
-
+    if (contactProfileId) filter.contactProfileId = contactProfileId;
+    if (categoryId?.length && categoryId?.length > 2) filter.categoryId = categoryId;
 
     const total = await Message.countDocuments(filter);
     const Messages = await Message.find(filter).skip(skip).limit(limit);

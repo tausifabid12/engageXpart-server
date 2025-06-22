@@ -18,7 +18,8 @@ export interface ILead {
     pageId: string
     source: 'facebook' | 'instagram'
     lastOrderDate: Date
-    lastMessageDate: Date
+    lastMessageTime: Date
     lastMessageText: string
-    unseenMesageCount: number
+    unseenMessageCount: number
+
 }

@@ -1,101 +1,20 @@
 import { Request, Response } from "express";
 import { createMessageInDb, deleteMessageFromDb, getMessageByIdFromDb, getMessagesFromDb, markAllMessagesAsSeen, updateMessageInDb } from "./message.service";
-import { IMessage } from "./message.interface";
-import { sendFacebookMessage } from "../../helpers/sendFacebookMessage";
 import Account from "../accounts/accounts.model";
-import { unwatchFile } from "fs";
-import { sendFacebookGenericTemplate } from "../../helpers/sendFacebookGenericTemplate";
-import { io } from "../../server";
-import { AuthRequest } from "../../types/AuthRequest";
+import { sendTextMessage } from "../../helpers/sendTextMessage";
 
 
 // Create a new Message
 export const createMessage = async (req: Request, res: Response): Promise<void> => {
     try {
 
+        const Message = await createMessageInDb(req.body);
 
-
-
-        const data: IMessage = req.body
-
-        const userAccount = await Account.findOne({
-            pages: { $elemMatch: { id: data?.pageId } }
-        });
-
-        const pageData = userAccount?.pages?.find(item => item?.id == data?.pageId)
-
-        // ============================ handle text message ==========================
-
-        if (data?.type == "text" && pageData) {
-            try {
-                const response = await sendFacebookMessage(
-                    pageData?.id,
-                    pageData?.access_token,
-                    {
-                        recipient: { id: data?.contactProfileId },
-                        message: { text: data?.messageText },
-                        messaging_type: 'RESPONSE'
-                    }
-                );
-                console.log('✅ Text Message sent:', response);
-            } catch (error) {
-                console.error('❌ Text Message error:', error);
-            }
+        if (Message?.type == "text") {
+            const accountData = await Account.findOne({ userId: Message?.userId })
+            const pageData = accountData?.pages?.find(item => item?.id == Message?.pageId)
+            await sendTextMessage(pageData?.id as string, Message?.contactProfileId, pageData?.access_token as string, Message?.messageText)
         }
-
-        // ============================ handle image  message ==========================
-
-        if (data?.type == "image" && pageData) {
-
-            try {
-                const response = await sendFacebookMessage(
-                    pageData?.id,
-                    pageData?.access_token,
-                    {
-                        recipient: { id: data?.contactProfileId },
-                        message: {
-                            attachments: data?.imageUrls?.map(item => {
-                                return {
-                                    type: 'image',
-                                    payload: {
-                                        url: item,
-                                        is_reusable: true
-                                    }
-                                }
-                            })
-
-                        },
-                        messaging_type: 'RESPONSE'
-                    }
-                );
-                console.log('✅ Attachment Message sent:', response);
-            } catch (error) {
-                console.error('❌ Attachment Message error:', error);
-            }
-        }
-
-        // =========================== product carousel ================== message
-        if (data?.type == "promotion" && pageData) {
-
-
-            try {
-                const response = await sendFacebookGenericTemplate(
-                    pageData?.id,
-                    pageData?.access_token,
-                    data?.contactProfileId,
-                    JSON.parse(data?.templateData),
-                    userAccount?.userId as string
-
-                );
-                console.log('✅ Attachment Message sent:', response);
-            } catch (error) {
-                console.error('❌ Attachment Message error:', error);
-            }
-        }
-
-
-
-        const Message = await createMessageInDb(data);
 
         res.status(201).json({
             success: true,
@@ -103,23 +22,23 @@ export const createMessage = async (req: Request, res: Response): Promise<void> 
         });
     } catch (error) {
         console.log(error)
+        console.log(error)
         res.status(400).json({ message: "Error creating ", error });
     }
 };
 
 // Get all Messages
-export const getMessages = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getMessages = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { ids, profileId, id, searchQuery, name, page = '1', limit = '10' }: any = req.query;
+        const { ids, categoryId, id, contactProfileId, name, userId, page = '1', limit = '10' }: any = req.query;
 
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
         const skip = (pageNum - 1) * limitNum;
-        const userId = req?.user?.id;
 
         const idArray = ids ? ids.split(',') : []; // 👈 convert string to array
 
-        const { Messages, total } = await getMessagesFromDb(idArray, id, name, searchQuery, profileId, userId, skip, limitNum);
+        const { Messages, total } = await getMessagesFromDb(idArray, id, name, contactProfileId, categoryId, userId, skip, limitNum);
 
         res.status(200).json({
             success: true,
@@ -130,8 +49,10 @@ export const getMessages = async (req: AuthRequest, res: Response): Promise<void
         });
     } catch (error) {
         res.status(500).json({ message: "Error fetching Messages", error });
+        res.status(500).json({ message: "Error fetching Messages", error });
     }
 };
+
 
 
 // Get a single Message by ID
@@ -142,6 +63,10 @@ export const getMessageById = async (req: Request, res: Response): Promise<void>
             res.status(404).json({ message: "User flow not found" });
             return;
         }
+        res.status(201).json({
+            success: true,
+            data: Message
+        });
         res.status(201).json({
             success: true,
             data: Message
@@ -159,6 +84,10 @@ export const updateMessage = async (req: Request, res: Response): Promise<void> 
             res.status(404).json({ message: "User flow not found" });
             return;
         }
+        res.status(201).json({
+            success: true,
+            data: Message
+        });
         res.status(201).json({
             success: true,
             data: Message

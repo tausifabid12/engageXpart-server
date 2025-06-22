@@ -3,12 +3,12 @@ import crypto from 'crypto';
 import axios from 'axios';
 import Automation from '../automation/automation.model';
 import Account from '../accounts/accounts.model';
-import { checkProductStock, containsKeyword, getPagesToken, replyToComment, sendProductDetailsMessage } from './endpoint.helper';
+import { checkProductStock, containsKeyword, getPagesToken, replyToComment, saveMessage, sendProductDetailsMessage } from './endpoint.helper';
 import { getRandomItem } from '../../helpers/getRandomItemFromArray';
 import Lead from '../leads/leads.model';
 import Message from '../message/message.model';
 import { chownSync } from 'fs';
-import { io } from '../../server';
+import User from '../user/user.model';
 
 const VERIFY_TOKEN = "your_verify_token";
 
@@ -26,6 +26,9 @@ export function verifyWebhook(req: Request, res: Response): any {
     }
 }
 
+
+
+
 // // Handle Webhook Data (Page Events)
 export async function handleWebhookData(req: Request, res: Response): Promise<any> {
     let body = req.body;
@@ -37,119 +40,16 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
 
         let entry = body.entry[0]
 
-        let pageId = entry?.id
-        let UserPageId = entry?.id
-
-        console.log(JSON.stringify(entry), "_____________________")
-        console.log(pageId, "_____________________                                             pageId")
-
-
-        // *********************************** handle messages start ***********************************************
-        if (entry?.messaging && entry?.messaging?.length) {
-
-            const messagingItem = entry?.messaging[0]
-
-
-            const senderProfileId = messagingItem?.sender?.id
-            const recipientProfileId = messagingItem?.recipient?.id
-            const messageText = messagingItem?.message?.text
-            const messageId = messagingItem?.message?.mid
-            const timestamp = messagingItem?.timestamp
-
-
-            // ========== find our user account details
-            const userAccount = await Account.findOne({
-                pages: { $elemMatch: { id: recipientProfileId } }
-            });
-
-
-            io.to(userAccount?.userId as string).emit("messages", {
-                title: "New Alert!",
-                message: "You have a new message.",
-            });
-
-
-
-
-
-            const userCustomerDetails = await Lead.findOne({ profileId: senderProfileId });
-
-
-            // ==================== save commenter as a lead
-
-            let leadsData = await Lead.findOne({ profileId: senderProfileId });
-
-
-            if (leadsData && leadsData?._id) {
-
-
-                const messageData = {
-                    userId: userAccount?.userId,
-                    userName: userAccount?.name,
-                    contactName: leadsData?.name,
-                    contactProfileUrl: leadsData?.profileUrl,
-                    contactProfileId: leadsData?.profileId,
-                    messageText: messageText,
-                    imageUrl: '',
-                    videoUrl: '',
-                    docuemntUrl: '',
-                    type: 'text', // default type
-                    templateData: '',
-                    messageId: messageId,
-                    isSeen: false,
-                    time: timestamp,
-                    echo: false,
-                    pageId: pageId
-                }
-                const resulMesg = await Message.create(messageData);
-
-                let newLead = {
-                    profileId: senderProfileId,
-                    source: "facebook",
-                    lastMessageText: messageText,
-                    unseenMesageCount: leadsData?.unseenMesageCount + 1,
-                    lastMessageDate: timestamp,
-                }
-
-                const result = await Lead.findByIdAndUpdate(leadsData?._id, newLead, { new: true });
-                console.log(result)
-            } else {
-                let newLead = {
-                    profileId: senderProfileId,
-                    source: "facebook",
-                    lastMessageText: messageText,
-                    unseenMesageCount: 1,
-                    lastMessageDate: timestamp,
-                    pageId: pageId
-                }
-                const resul = await Lead.create(newLead);
-
-                const messageData = {
-                    userId: userAccount?.userId,
-                    userName: userAccount?.name,
-                    contactProfileId: senderProfileId,
-                    messageText: messageText,
-                    type: 'text',
-                    messageId: messageId,
-                    isSeen: false,
-                    time: timestamp,
-                    echo: false,
-                }
-                const resulMesg = await Message.create(messageData);
-                console.log(resul)
-            }
-
-
-        }
-
-
-
+        console.log(JSON.stringify(entry))
 
         // *********************************** Comment Automation Process start ***********************************************
         if (entry.changes && entry.changes?.length) {
 
 
             let webhookEvent = entry.changes[0];
+            let UserPageId = entry.id;
+            console.log(webhookEvent, UserPageId, 'page      ++++++++++++ entry')
+
 
             if (webhookEvent?.field == 'feed' && webhookEvent?.value?.item == 'comment') {
 
@@ -184,7 +84,7 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
 
 
                 const isKeywordExists = containsKeyword(keywords, comment)
-                console.log(isKeywordExists, keywords, comment, '||||||||||||| isKeywordExists ++++++++++++++++++ |||||||||||||||')
+                console.log(isKeywordExists, keywords, comment, userId, '||||||||||||| isKeywordExists ++++++++++++++++++ |||||||||||||||')
 
 
 
@@ -204,13 +104,13 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
 
                     // ========= find user account for access token======================================
 
-                    let accountData = await Account.find({ userId });
+                    let accountData = await Account.findOne({ userId });
 
                     console.log(accountData, "accountData |||||||||||||||")
-                    let account_accessToken = accountData[0]?.accessToken
+                    let account_accessToken = accountData?.accessToken
 
                     // ================ get all pages with page access token=============================
-                    let pageData = accountData[0]?.pages?.find(item => item.id == pageId)
+                    let pageData = accountData?.pages?.find(item => item.id == pageId)
                     console.log(pageData, "pageData |||||||||||||||")
                     const pageAccessToken = pageData?.access_token
 
@@ -238,15 +138,15 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
 
                 let leadsData = await Lead.find({ profileId: customerId });
 
-
-
-                console.log(leadsData, '|||||||||||||||||||')
+                let accountData = await Account.findOne({ "pages.id": UserPageId });;
+                let userI = accountData?.userId
 
                 if (leadsData && leadsData[0]?._id) {
 
 
                     console.log('jere  +++++++++++++++++++++++++++++++++++++++++++++')
                     let newLead = {
+                        userId: userI,
                         name: customerName,
                         profileId: customerId,
                         interestedPostIds: [...leadsData[0]?.interestedPostIds, post_id],
@@ -254,17 +154,24 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
                             ? [...(leadsData[0]?.interestedProductId || []), ...productsIds]
                             : leadsData[0]?.interestedProductId || [],
                         isCustomer: false,
-                        source: "facebook",
+                        orderCount: 0,
+                        orderIds: [],
+                        address: "",
+                        state: "",
+                        city: "",
+                        source: "facebook"
                     }
 
-                    console.log(newLead, 'here ')
+                    console.log('here  ++++++++++++++++++++++++++++++++++++++++++', newLead)
+                    console.log('here  ++++++++++++++++++++++++++++++++++++++++++', customerId, userId, customerName)
 
-                    const result = await Lead.findByIdAndUpdate(leadsData[0]?._id, newLead, { new: true });
-                    console.log(result, "]]]]]]]]]]]]]]]]]]]]]]]]")
+                    const re = await Lead.findByIdAndUpdate(leadsData[0]?._id, newLead, { new: true });
+                    console.log(re, "response")
 
                 } else {
                     let newLead = {
-                        name: customerName,
+                        userId: userI,
+                        name: customerName || "",
                         profileId: customerId,
                         email: "",
                         phone: "",
@@ -278,7 +185,7 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
                         state: "",
                         city: "",
                         source: "facebook",
-                        pageId: UserPageId
+                        unseenMessageCount: 0
                     }
                     console.log(newLead)
                     await Lead.create(newLead);
@@ -295,35 +202,92 @@ export async function handleWebhookData(req: Request, res: Response): Promise<an
 
 
 
-        // ***********************************  automation Process end ***********************************************
+        // ***********************************  Comment Automation automation Process end ***********************************************
+
+
+        // ================================== handle message ==========================================
+        if (entry.messaging && entry.messaging?.length) {
+            let messagingData = req.body?.entry[0]?.messaging[0]
+            const time = messagingData?.time
+            const senderId = messagingData?.sender?.id
+            const recipientId = messagingData?.recipient?.id
+            const messageId = messagingData?.message?.mid
+            const message = messagingData?.message?.text
+            const timestamp = messagingData?.timestamp
+
+
+            console.log(senderId, recipientId, messageId, message, timestamp)
+
+
+            let accountData = await Account.findOne({ "pages.id": recipientId });;
+            const userId = accountData?.userId
+            const username = accountData?.name
+
+            //============= check if user is a lead ======================
+            let leadsData = await Lead.find({ profileId: senderId });
+            let leadName = leadsData[0]?.name
+            let leadProfileId = leadsData[0]?.profileId
+
+
+            let messageData = {
+                userId: userId,
+                userName: username || "",
+                contactName: leadName || "",
+                contactProfileUrl: '',
+                contactProfileId: senderId,
+                messageText: message,
+                imageUrl: "",
+                videoUrl: "",
+                type: 'text',
+                templateData: "",
+                messageId: messageId,
+                isSeen: false,
+                time: timestamp,
+                echo: false,
+                pageId: recipientId
+            }
+
+            // @ts-ignore
+            let result = await saveMessage(messageData)
 
 
 
-        // *********************************** Page message Process start ***********************************************
+            if (leadsData && leadsData[0]?._id) {
+                let newLead = {
+                    lastMessageTime: new Date(timestamp).toISOString(),
+                    lastMessageText: message,
+                    unseenMessageCount: leadsData[0]?.unseenMessageCount + 1,
+                }
 
-        // if (entry?.messaging && entry?.messaging?.length) {
-        //     let messagingData = req.body?.entry[0]?.messaging[0]
-        //     const time = messagingData?.time
-        //     const senderId = messagingData?.sender?.id
-        //     const recipientId = messagingData?.recipient?.id
-        //     const messageId = messagingData?.message?.mid
-        //     const message = messagingData?.message?.text
+                let res = await Lead.findByIdAndUpdate(leadsData[0]?._id, newLead, { new: true });
 
-        //     let accountData = await Account.find({ profileId: recipientId });
-        //     const userId = accountData[0]?.userId
-        //     const username = accountData[0]?.name
+                console.log(res, ';;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;')
+
+            } else {
+                let newLead = {
+                    userId: userId,
+                    name: "",
+                    profileId: recipientId,
+                    isCustomer: false,
+                    orderCount: 0,
+                    source: "facebook",
+                    lastMessageTime: new Date(timestamp).toISOString(),
+                    lastMessageText: message,
+                    unseenMessageCount: leadsData[0]?.unseenMessageCount + 1,
+                }
+                let res = await Lead.create(newLead);
+
+                console.log(res, ":::::::::::::::::::::::::::::::::::::::::")
+            }
+        }
 
 
-        //     console.log(time, "time", message, " message", senderId, "senderId", recipientId, "userId", userId)
 
 
 
 
 
 
-
-
-        // }
 
 
 

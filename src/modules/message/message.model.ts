@@ -15,11 +15,11 @@ const MessageSchema = new mongoose.Schema<IMessage>(
         contactProfileUrl: { type: String, required: false },
         contactProfileId: { type: String, required: true },
         messageText: { type: String, required: false },
-        imageUrls: { type: [String], required: false },
+        imageUrl: { type: String, required: false },
         videoUrl: { type: String, required: false },
         type: {
             type: String,
-            enum: ['text', 'image', 'template', "promotion"],
+            enum: ['text', 'image', 'template'],
             required: true,
         },
         templateData: { type: String, required: false },

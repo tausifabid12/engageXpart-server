@@ -8,10 +8,9 @@ export interface IMessage {
     contactProfileUrl: string
     contactProfileId: string
     messageText: string
-    imageUrls: string[]
+    imageUrl: string
     videoUrl: string
-    docuemntUrl: string
-    type: 'text' | 'image' | "template" | 'video' | 'docuemnt' | "promotion"
+    type: 'text' | 'image' | "template"
     templateData: string
     messageId: string
     isSeen: boolean

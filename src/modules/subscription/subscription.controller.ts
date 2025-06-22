@@ -12,6 +12,12 @@ export const createSubscription = async (req: Request, res: Response): Promise<v
             success: true,
             data: Subscription
         });
+        const { userId, userPhoneNumber, userName, plan } = req.body
+        const Subscription = await createSubscriptionInDb(userId, userName, userPhoneNumber, plan);
+        res.status(201).json({
+            success: true,
+            data: Subscription
+        });
     } catch (error) {
         res.status(400).json({ message: "Error creating ", error });
     }
@@ -19,14 +25,13 @@ export const createSubscription = async (req: Request, res: Response): Promise<v
 
 
 
-export const getSubscriptions = async (req: AuthRequest, res: Response): Promise<void> => {
+export const getSubscriptions = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { ids, categoryId, id, userPhoneNumber, userName, page = '1', limit = '10' }: any = req.query;
+        const { ids, categoryId, id, userPhoneNumber, userName, userId, page = '1', limit = '10' }: any = req.query;
 
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
         const skip = (pageNum - 1) * limitNum;
-        const userId = req?.user?.id;
 
         const idArray = ids ? ids.split(',') : []; // 👈 convert string to array
 
@@ -41,8 +46,10 @@ export const getSubscriptions = async (req: AuthRequest, res: Response): Promise
         });
     } catch (error) {
         res.status(500).json({ message: "Error fetching Subscriptions", error });
+        res.status(500).json({ message: "Error fetching Subscriptions", error });
     }
 };
+
 
 
 // Get a single Subscription by ID

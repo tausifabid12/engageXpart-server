@@ -1,4 +1,6 @@
 import { IProducts } from "../../types/product.interface";
+import { IMessage } from "../message/message.interface";
+import Message from "../message/message.model";
 import { IProduct } from "../product/product.interface";
 import Product from "../product/product.model";
 import User from "../user/user.model";
@@ -252,4 +254,12 @@ export function containsKeyword(keywords: string[], text: string): boolean {
         return false
     }
     return keywords?.some(keyword => text.toLowerCase().includes(keyword.toLowerCase()));
+}
+
+
+
+// ================================ async save message ==========================================================
+
+export async function saveMessage(data: IMessage) {
+    return await Message.create(data);
 }

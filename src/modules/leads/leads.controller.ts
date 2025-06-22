@@ -22,17 +22,15 @@ export const createLead = async (req: Request, res: Response): Promise<void> => 
 // Get all Leads
 export const getLeads = async (req: AuthRequest, res: Response): Promise<void> => {
     try {
-
-        const { ids, categoryId, id, searchQuery, name, page = '1', limit = '10' }: any = req.query;
+        const { ids, categoryId, id, categoryName, name, userId, page = '1', limit = '10' }: any = req.query;
 
         const pageNum = parseInt(page, 10);
         const limitNum = parseInt(limit, 10);
         const skip = (pageNum - 1) * limitNum;
 
-        const idArray = ids ? ids.split(',') : [];
-        const userId = req?.user?.id;
+        const idArray = ids ? ids.split(',') : []; // 👈 convert string to array
 
-        const { Leads, total } = await getLeadsFromDb(idArray, id, name, searchQuery, categoryId, userId, skip, limitNum);
+        const { Leads, total } = await getLeadsFromDb(idArray, id, name, categoryName, categoryId, userId, skip, limitNum);
 
         res.status(200).json({
             success: true,
@@ -43,14 +41,17 @@ export const getLeads = async (req: AuthRequest, res: Response): Promise<void> =
         });
     } catch (error) {
         res.status(500).json({ message: "Error fetching Leads", error });
+        res.status(500).json({ message: "Error fetching Leads", error });
     }
 };
+
 
 
 // Get a single Lead by ID
 export const getLeadById = async (req: Request, res: Response): Promise<void> => {
     try {
         const Lead = await getLeadByIdFromDb(req.params.id);
+        // const Lead = await getLeadByIdFromDb(req.params.id);
         if (!Lead) {
             res.status(404).json({ message: "User flow not found" });
             return;
